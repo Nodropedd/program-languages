@@ -21,14 +21,14 @@
         .custom-scrollbar::-webkit-scrollbar-track{ background-color: rgba(255,255,255,0.05) }
         .blurred { filter: blur(8px) brightness(0.7); transform: scale(0.98); pointer-events: none; }
         .chart-bar-fill { width:0; transition: width 1.5s cubic-bezier(0.22,1,0.36,1); }
-        /* tiny avatars */
         .role-badge { font-size: 11px; padding: 2px 6px; border-radius: 999px; }
         .guest-icon { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:999px; background:rgba(255,255,255,0.03); }
-        /* forum/hiring */
         .msg { padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.03); }
-        .msg-admin { background: rgba(236,72,153,0.08); border:1px solid rgba(236,72,153,0.12) }
+        .msg-admin { background: rgba(236,72,153,0.06); border:1px solid rgba(236,72,153,0.08) }
         .small { font-size:12px }
         .pill { padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04) }
+        .chat-box { max-height: 320px; overflow-y: auto; }
+        .clickable { cursor: pointer; }
     </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden animated-bg selection:bg-indigo-500 selection:text-white">
@@ -37,16 +37,27 @@
     <header class="flex flex-col md:flex-row justify-between items-center px-6 py-5 z-10 gap-4">
         <div class="text-center md:text-left">
             <h1 id="app-title" class="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Programación de Servidores</h1>
-            <p id="app-subtitle" class="text-gray-300 text-sm font-medium mt-1 tracking-wide">Niveles de programar. Wiki por Nodropedd_</p>
+            <p id="app-subtitle" class="text-gray-300 text-sm font-medium mt-1 tracking-wide">Niveles de programar de Minecraft. Wiki por Nodropedd_</p>
         </div>
+
         <div class="flex gap-3 items-center">
             <button onclick="openVersionsModal()" class="group relative p-3 px-4 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/30 transition-all duration-300 shadow-lg backdrop-blur-md flex items-center gap-2 text-sm font-medium text-indigo-300 hover:text-white">
                 <i data-lucide="server" class="w-5 h-5"></i><span id="versions-btn-text">Ver Versiones Core</span>
             </button>
 
-            <!-- replaced "signs" with guest/login icon -->
+            <!-- DM icon -->
+            <button id="dm-btn" onclick="openDMModal()" class="guest-icon hover:scale-105 transition-transform" title="Direct messages">
+                <span class="text-2xl">💬</span>
+            </button>
+
+            <!-- Applications (paper) - visible to admins -->
+            <button id="apps-btn" onclick="openApplicationsModal()" class="guest-icon hover:scale-105 transition-transform hidden" title="View applications">
+                <span class="text-2xl">📄</span>
+            </button>
+
+            <!-- guest / login icon -->
             <button id="guest-btn" onclick="openLoginModal()" class="guest-icon hover:scale-105 transition-transform" title="Login / Register">
-                <span class="text-2xl">👤</span>
+                <span id="guest-emoji" class="text-2xl">👤</span>
             </button>
 
             <button onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
@@ -65,12 +76,11 @@
             </div>
         </div>
 
-        <!-- FORUMS SECTION (not auto-translated content area) -->
+        <!-- FORUMS SECTION -->
         <section id="forums-section" class="container mx-auto p-4 mt-6">
             <div class="bg-gray-800/60 border border-white/5 rounded-2xl p-6 shadow-lg">
                 <div class="flex items-center justify-between mb-4">
                     <div>
-                        <!-- The "forums chat" subtitle translated to Spanish below as requested; the forum content itself is user-generated and not auto-translated -->
                         <h3 class="text-xl font-bold">Forums Chat</h3>
                         <p class="text-sm text-gray-400">Foros - Chat (esta sección no se traduce automáticamente)</p>
                     </div>
@@ -83,19 +93,19 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="md:col-span-2 flex flex-col gap-3">
-                        <div id="forum-messages" class="flex flex-col gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-2 rounded-lg"></div>
+                        <div id="forum-messages" class="flex flex-col gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-2 rounded-lg chat-box"></div>
 
                         <div class="flex gap-2 mt-2">
                             <input id="forum-input" placeholder="Write a message..." class="flex-grow px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5 focus:outline-none" />
                             <button id="send-btn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500">Send</button>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">Choose a name and a tiny password in the login/register modal to post messages. Admin "nodropedd" can remove messages.</p>
+                        <p class="text-xs text-gray-400 mt-1">Choose a name and a small password in the login/register modal to post messages.</p>
                     </div>
 
                     <div class="flex flex-col gap-3">
                         <div class="bg-gray-800/50 rounded-xl p-3 border border-white/5">
                             <h4 class="font-bold">Quick Login</h4>
-                            <p class="text-sm text-gray-400">Use the top-right guest icon to login/register. Default admin: nodropedd</p>
+                            <p class="text-sm text-gray-400">Use the top-right icon to login/register.</p>
                             <div class="flex gap-2 mt-2">
                                 <button class="pill" onclick="openLoginModal()">Login / Register</button>
                                 <button class="pill" onclick="openApplyModal()">Apply</button>
@@ -186,10 +196,10 @@
     </div>
 </div>
 
-<!-- Settings Modal -->
+<!-- Settings Modal (includes change-password when logged in) -->
 <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0"></div>
-    <div class="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-80 shadow-2xl transform scale-95 smooth-transition" id="settings-card">
+    <div class="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-96 shadow-2xl transform scale-95 smooth-transition" id="settings-card">
         <h3 id="st-title" class="text-xl font-bold mb-4 text-center">Ajustes / Settings</h3>
         <div class="space-y-3">
             <button onclick="changeLang('es')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 transition-all group">
@@ -198,6 +208,19 @@
             <button onclick="changeLang('en')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 transition-all group">
                 <span class="font-medium">English</span> <span id="check-en" class="opacity-0 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
             </button>
+
+            <div id="account-section" class="pt-4 border-t border-white/5 hidden">
+                <h4 class="font-bold">Account</h4>
+                <div class="space-y-2 mt-2">
+                    <div class="text-sm">Change password</div>
+                    <input id="old-pass" type="password" placeholder="Current password" class="w-full px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+                    <input id="new-pass" type="password" placeholder="New password" class="w-full px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+                    <div class="flex gap-2">
+                        <button class="w-full py-2 rounded-xl bg-indigo-600" onclick="changePassword()">Change Password</button>
+                        <button class="w-full py-2 rounded-xl bg-red-600" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -218,12 +241,12 @@
                 <button class="w-1/2 py-2 rounded-xl bg-indigo-600" onclick="registerUser()">Register</button>
                 <button class="w-1/2 py-2 rounded-xl bg-emerald-600" onclick="loginUser()">Login</button>
             </div>
-            <p class="text-xs text-gray-400">The user "nodropedd" exists by default as admin. Password can be 'admin' (change later).</p>
+            <p class="text-xs text-gray-400">Create an account to post, DM others and apply. Admin accounts are assigned by existing admins only.</p>
         </div>
     </div>
 </div>
 
-<!-- Apply Modal -->
+<!-- Apply Modal (asks for Discord handle) -->
 <div id="apply-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="apply-card">
@@ -232,12 +255,25 @@
             <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
         <div class="space-y-3">
-            <p class="text-sm text-gray-300">Applications will be reviewed by admins. If accepted you'll receive the "server developer" role and permissions to create hiring posts (up to 3 per month).</p>
+            <p class="text-sm text-gray-300">Applications will be reviewed by admins. Please include your Discord handle so admins can contact you.</p>
+            <input id="apply-discord" placeholder="Discord (e.g. user#1234)" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
             <textarea id="apply-msg" rows="5" placeholder="Describe your experience & hourly rate..." class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5"></textarea>
             <div class="flex gap-2">
                 <button class="w-full py-2 rounded-xl bg-indigo-600" onclick="submitApplication()">Submit Application</button>
             </div>
         </div>
+    </div>
+</div>
+
+<!-- Applications Modal (admins only) -->
+<div id="applications-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-3xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="applications-card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Server Developer Applications</h3>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div id="applications-list" class="space-y-2 max-h-[60vh] overflow-y-auto custom-scrollbar"></div>
     </div>
 </div>
 
@@ -260,82 +296,120 @@
     </div>
 </div>
 
-<script>
-/* ----------------------
-   Data & Initial State
-   ---------------------- */
-const content = {
-    es: {
-        appTitle: "Programación de Servidores",
-        appSubtitle: "Niveles de programar de Minecraft. Wiki por Nodropedd_",
-        settingsTitle: "Idioma / Language",
-        versionsBtn: "Ver Versiones Core"
-    },
-    en: {
-        appTitle: "Server Programming",
-        appSubtitle: "Levels of programming of Minecraft. Wiki by Nodropedd_",
-        settingsTitle: "Language / Idioma",
-        versionsBtn: "View Core Versions"
-    }
-};
+<!-- Hiring Chat Modal -->
+<div id="hiring-chat-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-2xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="hiring-chat-card">
+        <div class="flex justify-between items-center mb-2">
+            <div>
+                <h3 id="hchat-title" class="text-lg font-bold">Hiring Chat</h3>
+                <div id="hchat-sub" class="text-xs text-gray-400">Chat for hiring post</div>
+            </div>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div id="hchat-messages" class="chat-box mb-2 p-2 rounded-lg bg-gray-900/20 custom-scrollbar"></div>
+        <div class="flex gap-2">
+            <input id="hchat-input" placeholder="Message..." class="flex-grow px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <button class="px-4 py-2 rounded-xl bg-indigo-600" onclick="sendHiringChat()">Send</button>
+        </div>
+    </div>
+</div>
 
+<!-- DMs Modal -->
+<div id="dms-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-3xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="dms-card">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-lg font-bold">Direct Messages</h3>
+            <div class="flex items-center gap-2">
+                <input id="new-dm-user" placeholder="username to DM" class="px-3 py-1 rounded-xl bg-gray-800/40 border border-white/5" />
+                <button class="pill" onclick="startDM()">Open</button>
+                <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="md:col-span-1">
+                <div class="bg-gray-900/20 rounded-lg p-2 max-h-[48vh] overflow-y-auto custom-scrollbar" id="dm-conversations"></div>
+            </div>
+            <div class="md:col-span-2 flex flex-col">
+                <div id="dm-window" class="flex-1 bg-gray-900/20 rounded-lg p-3 mb-2 chat-box custom-scrollbar"></div>
+                <div class="flex gap-2">
+                    <input id="dm-input" placeholder="Write DM..." class="flex-grow px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+                    <button class="px-4 py-2 rounded-xl bg-indigo-600" onclick="sendDM()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+/* ==========================
+   Storage keys & init data
+   ========================== */
 let currentLang = localStorage.getItem('lang') || 'es';
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 let users = JSON.parse(localStorage.getItem('users') || 'null');
-let messages = JSON.parse(localStorage.getItem('messages') || 'null');
+let messages = JSON.parse(localStorage.getItem('messages') || 'null'); // public forum messages
 let hiringPosts = JSON.parse(localStorage.getItem('hiringPosts') || 'null');
+let hiringChats = JSON.parse(localStorage.getItem('hiringChats') || 'null'); // {postId: [{sender,text,ts}]}
 let applications = JSON.parse(localStorage.getItem('applications') || 'null');
+let dms = JSON.parse(localStorage.getItem('dms') || 'null'); // [{id,participants:[a,b],messages:[{sender,text,ts}]}]
 
-// Initialize storage defaults
-if (!users) {
-    users = [
-        // default admin
-        { name: "nodropedd", pass: "admin", role: "admin", postsThisMonth: 0, lastReset: Date.now() }
-    ];
-    localStorage.setItem('users', JSON.stringify(users));
-}
+// initialize if missing
+if (!users) { users = []; localStorage.setItem('users', JSON.stringify(users)); }
 if (!messages) { messages = []; localStorage.setItem('messages', JSON.stringify(messages)); }
 if (!hiringPosts) { hiringPosts = []; localStorage.setItem('hiringPosts', JSON.stringify(hiringPosts)); }
+if (!hiringChats) { hiringChats = {}; localStorage.setItem('hiringChats', JSON.stringify(hiringChats)); }
 if (!applications) { applications = []; localStorage.setItem('applications', JSON.stringify(applications)); }
+if (!dms) { dms = []; localStorage.setItem('dms', JSON.stringify(dms)); }
 
-/* ----------------------
-   UI Helpers
-   ---------------------- */
-function updateHeaderAndLang() {
-    document.getElementById('app-title').textContent = content[currentLang].appTitle;
-    document.getElementById('app-subtitle').textContent = content[currentLang].appSubtitle;
-    document.getElementById('versions-btn-text').textContent = content[currentLang].versionsBtn;
+/* ==========================
+   UI helpers
+   ========================== */
+function updateHeaderAndLang(){
+    const subEs = "Niveles de programar de Minecraft. Wiki por Nodropedd_";
+    const subEn = "Levels of programming of Minecraft. Wiki by Nodropedd_";
+    document.getElementById('app-title').textContent = currentLang === 'es' ? "Programación de Servidores" : "Server Programming";
+    document.getElementById('app-subtitle').textContent = currentLang === 'es' ? subEs : subEn;
+    document.getElementById('versions-btn-text').textContent = currentLang === 'es' ? "Ver Versiones Core" : "View Core Versions";
     document.getElementById('check-es').style.opacity = currentLang === 'es' ? 1 : 0;
     document.getElementById('check-en').style.opacity = currentLang === 'en' ? 1 : 0;
 }
 
-function saveAll() {
+function saveAll(){
     localStorage.setItem('users', JSON.stringify(users));
     localStorage.setItem('messages', JSON.stringify(messages));
     localStorage.setItem('hiringPosts', JSON.stringify(hiringPosts));
+    localStorage.setItem('hiringChats', JSON.stringify(hiringChats));
     localStorage.setItem('applications', JSON.stringify(applications));
+    localStorage.setItem('dms', JSON.stringify(dms));
 }
 
-function getUser(name) { return users.find(u => u.name === name); }
-function isLogged() { return !!currentUser; }
-
-function refreshUserBadge() {
+function getUser(name){ return users.find(u => u.name === name); }
+function refreshUserBadge(){
     const badge = document.getElementById('current-user-badge');
     const roleEl = document.getElementById('current-user-role');
+    const appsBtn = document.getElementById('apps-btn');
     if (currentUser) {
         badge.textContent = currentUser.name;
         roleEl.textContent = currentUser.role || 'Member';
         roleEl.classList.remove('hidden');
+        // show applications button only for admins
+        if (currentUser.role === 'admin') appsBtn.classList.remove('hidden'); else appsBtn.classList.add('hidden');
+        // show account section in settings
+        document.getElementById('account-section').classList.remove('hidden');
     } else {
         badge.textContent = 'Guest';
         roleEl.classList.add('hidden');
+        appsBtn.classList.add('hidden');
+        document.getElementById('account-section').classList.add('hidden');
     }
 }
 
-/* ----------------------
-   Cards & Chart (existing)
-   ---------------------- */
-// Keep the same levels & serverVersions data used earlier (simplified for brevity)
+/* ==========================
+   Cards & Chart (simplified)
+   ========================== */
 const levels = [
   { id:0,title:"Comandos",ext:"/setblock /execute",barColor:"bg-gray-500",progress:"2%",color:"text-gray-400",whatIs:"El nivel más básico.",whatDo:"Ejecutar comandos." , prog:"Nula."},
   { id:1,title:".yml",ext:"YAML Config",barColor:"bg-emerald-500",progress:"10%",color:"text-emerald-400",whatIs:"YAML configs.",whatDo:"Editar plugins.",prog:"Muy Baja."},
@@ -398,36 +472,42 @@ function populateChart(){
     });
 }
 
-/* ----------------------
-   Modals & Detail
-   ---------------------- */
-const modals = [
+/* ==========================
+   Modals (open/close)
+   ========================== */
+const modalList = [
     { id: 'versions-modal', cardId: 'versions-card' },
     { id: 'detail-modal', cardId: 'detail-card' },
     { id: 'settings-modal', cardId: 'settings-card' },
     { id: 'login-modal', cardId: 'login-card' },
     { id: 'apply-modal', cardId: 'apply-card' },
-    { id: 'create-hiring-modal', cardId: 'create-hiring-card' }
+    { id: 'applications-modal', cardId: 'applications-card' },
+    { id: 'create-hiring-modal', cardId: 'create-hiring-card' },
+    { id: 'hiring-chat-modal', cardId: 'hiring-chat-card' },
+    { id: 'dms-modal', cardId: 'dms-card' }
 ];
 
 function openModal(modalId, cardId){
     document.getElementById('main-canvas').classList.add('blurred');
     const modal = document.getElementById(modalId);
     const card = document.getElementById(cardId);
+    if (!modal) return;
     modal.classList.remove('opacity-0','pointer-events-none');
-    card.classList.remove('scale-90','translate-y-4');
-    card.classList.add('scale-100','translate-y-0');
+    if (card) { card.classList.remove('scale-90','translate-y-4'); card.classList.add('scale-100','translate-y-0'); }
 }
 function closeAll(){
     document.getElementById('main-canvas').classList.remove('blurred');
-    modals.forEach(m=>{
+    modalList.forEach(m=>{
         const modal = document.getElementById(m.id);
         const card = document.getElementById(m.cardId);
-        modal.classList.add('opacity-0','pointer-events-none');
+        if (modal) modal.classList.add('opacity-0','pointer-events-none');
         if (card) { card.classList.add('scale-90','translate-y-4'); card.classList.remove('scale-100','translate-y-0'); }
     });
 }
 
+/* ==========================
+   Versions / Detail
+   ========================== */
 function openVersionsModal(){ populateVersionsModal(); openModal('versions-modal','versions-card'); }
 function openDetailModal(level){
     document.getElementById('m-level').textContent = `${currentLang==='es'?'Nivel':'Level'} ${level.id+1}`;
@@ -442,7 +522,6 @@ function openDetailModal(level){
     setTimeout(()=> bar.style.width = level.progress, 60);
     openModal('detail-modal','detail-card');
 }
-
 function populateVersionsModal(){
     const tbody = document.getElementById('versions-tbody');
     tbody.innerHTML = '';
@@ -462,24 +541,22 @@ function populateVersionsModal(){
     });
 }
 
-/* ----------------------
-   Auth: Login / Register
-   ---------------------- */
+/* ==========================
+   Auth (register/login/logout/change password)
+   ========================== */
 function openLoginModal(){ openModal('login-modal','login-card'); }
 function registerUser(){
     const name = (document.getElementById('login-name').value || '').trim();
     const pass = (document.getElementById('login-pass').value || '').trim();
     if (!name || !pass) return alert('Provide name and tiny password.');
     if (getUser(name)) return alert('User exists - please login or choose another name.');
-    const usr = { name, pass, role: 'member', postsThisMonth: 0, lastReset: Date.now() };
-    users.push(usr);
-    saveAll();
+    const usr = { name, pass, role: 'member', postsThisMonth: 0, lastReset: Date.now(), friends: [] };
+    users.push(usr); saveAll();
     currentUser = { name: usr.name, role: usr.role };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     refreshUserBadge(); closeAll();
     alert('Registered and logged in as ' + usr.name);
 }
-
 function loginUser(){
     const name = (document.getElementById('login-name').value || '').trim();
     const pass = (document.getElementById('login-pass').value || '').trim();
@@ -490,30 +567,52 @@ function loginUser(){
     refreshUserBadge(); closeAll();
     alert('Welcome back, ' + u.name);
 }
+function logout(){
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    refreshUserBadge();
+    closeAll();
+    alert('Logged out.');
+}
+function changePassword(){
+    if (!currentUser) return alert('Login first.');
+    const oldPass = (document.getElementById('old-pass').value || '').trim();
+    const newPass = (document.getElementById('new-pass').value || '').trim();
+    if (!oldPass || !newPass) return alert('Fill both fields.');
+    const u = getUser(currentUser.name);
+    if (!u) return alert('User record missing.');
+    if (u.pass !== oldPass) return alert('Current password is incorrect.');
+    u.pass = newPass; saveAll();
+    document.getElementById('old-pass').value = ''; document.getElementById('new-pass').value = '';
+    alert('Password changed.');
+}
 
-/* ----------------------
-   Forum Messages
-   ---------------------- */
+/* ==========================
+   Forum messages (public)
+   ========================== */
+function escapeHtml(str){ return String(str).replace(/[&<>"'`]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[s])); }
+
 function renderMessages(){
     const container = document.getElementById('forum-messages');
     container.innerHTML = '';
     messages.forEach(m=>{
         const el = document.createElement('div');
         el.className = 'msg flex items-start gap-3';
-        if (m.user === 'nodropedd') el.classList.add('msg-admin');
+        if (m.role === 'admin') el.classList.add('msg-admin');
         el.innerHTML = `
             <div class="w-10 flex flex-col items-center">
-                <div class="text-lg">${m.user==='nodropedd'?'👑':'🙂'}</div>
+                <div class="text-lg">${m.role === 'admin' ? '👑' : '🙂'}</div>
                 <div class="text-xs text-gray-400">${new Date(m.ts).toLocaleTimeString()}</div>
             </div>
             <div class="flex-1">
                 <div class="flex items-center justify-between gap-2">
                     <div>
-                        <strong>${m.user}</strong>
+                        <strong class="clickable" onclick="openDMFromUser('${m.user}')">${escapeHtml(m.user)}</strong>
                         <span class="text-xs text-gray-400 ml-2">${m.role || 'Member'}</span>
                     </div>
                     <div class="flex items-center gap-2">
                         ${currentUser && (currentUser.role === 'admin' || currentUser.name === m.user) ? `<button class="text-xs text-red-400" onclick="removeMessage('${m.id}')">Remove</button>` : ''}
+                        ${currentUser && currentUser.name !== m.user ? `<button class="text-xs text-indigo-300" onclick="addFriendFromMsg('${m.user}')">Add Friend</button>` : ''}
                     </div>
                 </div>
                 <div class="mt-1 text-sm">${escapeHtml(m.text)}</div>
@@ -523,7 +622,6 @@ function renderMessages(){
     });
     container.scrollTop = container.scrollHeight;
 }
-
 function sendMessage(){
     const txt = (document.getElementById('forum-input').value || '').trim();
     if (!txt) return;
@@ -534,19 +632,109 @@ function sendMessage(){
     messages.push(msg); saveAll(); renderMessages();
     document.getElementById('forum-input').value = '';
 }
-
 function removeMessage(id){
     if (!currentUser) return alert('Not allowed.');
     const idx = messages.findIndex(m=>m.id===id); if (idx===-1) return;
-    // Admin or message owner can remove
     if (currentUser.role === 'admin' || messages[idx].user === currentUser.name) {
         messages.splice(idx,1); saveAll(); renderMessages();
     } else alert('Not permitted.');
 }
 
-/* ----------------------
-   Hiring Posts & Chats
-   ---------------------- */
+/* ==========================
+   Friend & DM helpers
+   ========================== */
+function addFriendFromMsg(username){
+    if (!currentUser) return alert('Login to add friends.');
+    const u = getUser(currentUser.name);
+    if (!u) return alert('User record missing.');
+    u.friends = u.friends || [];
+    if (u.friends.includes(username)) return alert('Already friend.');
+    u.friends.push(username); saveAll(); alert(username + ' added to friends.');
+}
+
+function openDMModal(){ openModal('dms-modal','dms-card'); renderDMConversations(); }
+function openDMFromUser(username){
+    if (!currentUser) return alert('Login to DM.');
+    openDMModal();
+    setTimeout(()=> startDMWith(username), 80);
+}
+function startDM(){
+    const name = (document.getElementById('new-dm-user').value || '').trim();
+    if (!name) return alert('Enter username to DM.');
+    startDMWith(name);
+}
+function startDMWith(name){
+    if (!currentUser) return alert('Login to DM.');
+    if (!getUser(name)) return alert('User not found.');
+    // find or create conversation
+    let convo = dms.find(c => c.participants.includes(currentUser.name) && c.participants.includes(name));
+    if (!convo) {
+        convo = { id: 'dm_' + Date.now() + '_' + Math.random().toString(36,6), participants: [currentUser.name, name], messages: [] };
+        dms.push(convo); saveAll();
+    }
+    openModal('dms-modal','dms-card');
+    renderDMConversations(convo.id);
+    renderDMWindow(convo.id);
+}
+function renderDMConversations(selectedId){
+    const container = document.getElementById('dm-conversations');
+    container.innerHTML = '';
+    // list user's conversations
+    const myConvos = dms.filter(c => c.participants.includes(currentUser ? currentUser.name : ''));
+    myConvos.forEach(c=>{
+        const other = c.participants.find(p => p !== currentUser.name);
+        const last = c.messages.length ? c.messages[c.messages.length-1].text.slice(0,40) : 'No messages';
+        const el = document.createElement('div');
+        el.className = 'p-2 rounded-lg clickable hover:bg-white/5';
+        el.innerHTML = `<div class="font-bold">${escapeHtml(other)}</div><div class="text-xs text-gray-400">${escapeHtml(last)}</div>`;
+        el.onclick = ()=> { renderDMWindow(c.id); };
+        container.appendChild(el);
+    });
+    // friends fallback
+    const u = getUser(currentUser ? currentUser.name : '');
+    if (u && u.friends && u.friends.length) {
+        const friendsHeader = document.createElement('div'); friendsHeader.className='text-xs text-gray-400 mt-2'; friendsHeader.textContent='Friends';
+        container.appendChild(friendsHeader);
+        u.friends.forEach(f=>{
+            const el = document.createElement('div');
+            el.className='p-2 rounded-lg clickable hover:bg-white/5';
+            el.innerHTML = `<div>${escapeHtml(f)}</div>`;
+            el.onclick = ()=> startDMWith(f);
+            container.appendChild(el);
+        });
+    }
+}
+let activeDMId = null;
+function renderDMWindow(dmId){
+    const win = document.getElementById('dm-window');
+    win.innerHTML = '<div class="text-xs text-gray-400">Loading...</div>';
+    const convo = dms.find(c=>c.id===dmId);
+    if (!convo) { win.innerHTML = '<div class="text-sm text-gray-400">Conversation not found.</div>'; return; }
+    activeDMId = dmId;
+    win.innerHTML = '';
+    convo.messages.forEach(m=>{
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+        row.innerHTML = `<div class="${m.sender === currentUser.name ? 'text-right' : 'text-left'}"><strong>${escapeHtml(m.sender)}</strong> <span class="text-xs text-gray-400">${new Date(m.ts).toLocaleTimeString()}</span></div><div class="mt-1">${escapeHtml(m.text)}</div>`;
+        win.appendChild(row);
+    });
+    win.scrollTop = win.scrollHeight;
+}
+function sendDM(){
+    if (!currentUser) return alert('Login to send DMs.');
+    if (!activeDMId) return alert('Open a conversation first.');
+    const txt = (document.getElementById('dm-input').value || '').trim();
+    if (!txt) return;
+    const convo = dms.find(c=>c.id===activeDMId);
+    if (!convo) return alert('Conversation missing.');
+    convo.messages.push({ sender: currentUser.name, text: txt, ts: Date.now() });
+    saveAll(); renderDMWindow(activeDMId); document.getElementById('dm-input').value = '';
+    renderDMConversations(activeDMId);
+}
+
+/* ==========================
+   Hiring posts & per-post chats
+   ========================== */
 function renderHiring(){
     const list = document.getElementById('hiring-list');
     list.innerHTML = '';
@@ -558,10 +746,10 @@ function renderHiring(){
                 <div>
                     <div class="font-bold">${escapeHtml(p.title)}</div>
                     <div class="text-xs text-gray-400">${escapeHtml(p.desc)}</div>
-                    <div class="text-xs text-gray-300 mt-1">By: <strong>${p.owner}</strong> — <span class="text-emerald-400">${p.price}</span></div>
+                    <div class="text-xs text-gray-300 mt-1">By: <strong>${escapeHtml(p.owner)}</strong> — <span class="text-emerald-400">${escapeHtml(p.price)}</span></div>
                 </div>
                 <div class="flex flex-col gap-2">
-                    <button class="pill text-sm" onclick="openChatWith('${p.id}')">Chat</button>
+                    <button class="pill text-sm" onclick="openHiringChat('${p.id}')">Chat</button>
                     ${currentUser && (currentUser.role === 'admin' || currentUser.name === p.owner) ? `<button class="pill text-sm text-red-400" onclick="removeHiring('${p.id}')">Remove</button>` : ''}
                 </div>
             </div>
@@ -569,20 +757,60 @@ function renderHiring(){
         list.appendChild(el);
     });
 }
-
-function openChatWith(postId){
+function openHiringChat(postId){
     const post = hiringPosts.find(p=>p.id===postId);
-    if(!post) return alert('Post not found');
-    const chatId = 'chat_' + postId;
-    // Open a prompt-based chat (simple, stored locally)
-    const msg = prompt(`Chat with ${post.owner} about "${post.title}". Write your message:`)
-    if (!msg) return;
-    const chatKey = 'chat_' + postId + '_' + (currentUser ? currentUser.name : 'guest');
-    // we'll store messages in messages[] with special type for hiring chats
-    messages.push({ id: 'h_' + Date.now(), user: currentUser ? currentUser.name : 'guest', role: currentUser ? currentUser.role : 'guest', text: `[Hiring chat to ${post.owner}] ${msg}`, ts: Date.now() });
-    saveAll(); renderMessages(); alert('Message posted in forums (use it to negotiate). Payments outside the site.');
+    if (!post) return alert('Post not found');
+    openModal('hiring-chat-modal','hiring-chat-card');
+    document.getElementById('hchat-title').textContent = `Chat: ${post.title}`;
+    document.getElementById('hchat-sub').textContent = `Owner: ${post.owner} — Price: ${post.price}`;
+    currentHiringChat = postId;
+    renderHiringChat(postId);
+}
+let currentHiringChat = null;
+function renderHiringChat(postId){
+    const box = document.getElementById('hchat-messages');
+    box.innerHTML = '';
+    const chat = hiringChats[postId] || [];
+    chat.forEach(m=>{
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+        row.innerHTML = `<div class="text-xs text-gray-400">${escapeHtml(m.sender)} • ${new Date(m.ts).toLocaleTimeString()}</div><div>${escapeHtml(m.text)}</div>`;
+        box.appendChild(row);
+    });
+    box.scrollTop = box.scrollHeight;
+}
+function sendHiringChat(){
+    if (!currentUser) return alert('Login to chat.');
+    if (!currentHiringChat) return alert('No chat open.');
+    const txt = (document.getElementById('hchat-input').value || '').trim();
+    if (!txt) return;
+    hiringChats[currentHiringChat] = hiringChats[currentHiringChat] || [];
+    hiringChats[currentHiringChat].push({ sender: currentUser.name, text: txt, ts: Date.now() });
+    saveAll(); renderHiringChat(currentHiringChat); document.getElementById('hchat-input').value = '';
+    // also mirror to public messages as a record (optional)
+    messages.push({ id: 'hmsg_' + Date.now(), user: currentUser.name, role: getUser(currentUser.name)?.role || 'member', text: `[Hiring:${currentHiringChat}] ${txt}`, ts: Date.now() });
+    saveAll(); renderMessages();
 }
 
+/* Create, remove hiring posts */
+function createHiringPost(){
+    if (!currentUser) return alert('Login first.');
+    const u = getUser(currentUser.name);
+    if (!u) return alert('User record missing.');
+    if (!(u.role === 'server developer' || u.role === 'admin')) return alert('Only server developers or admins can create hiring posts.');
+    const now = Date.now();
+    if (!u.lastReset || now - u.lastReset > 30*24*3600*1000) { u.postsThisMonth = 0; u.lastReset = now; }
+    if ((u.postsThisMonth || 0) >= 3) return alert('You reached 3 hiring posts this month.');
+    const title = (document.getElementById('h-title').value || '').trim();
+    const price = (document.getElementById('h-price').value || '').trim();
+    const desc = (document.getElementById('h-desc').value || '').trim();
+    if (!title || !price || !desc) return alert('Fill title, price and description.');
+    const id = 'hp_' + Date.now() + '_' + Math.random().toString(36,6);
+    hiringPosts.push({ id, owner: currentUser.name, title, price, desc, ts: Date.now() });
+    u.postsThisMonth = (u.postsThisMonth || 0) + 1;
+    saveAll(); renderHiring(); closeAll();
+    alert('Hiring post created. Payments outside the website.');
+}
 function removeHiring(id){
     if (!currentUser) return alert('Not allowed.');
     const idx = hiringPosts.findIndex(h=>h.id===id);
@@ -592,45 +820,66 @@ function removeHiring(id){
     } else alert('Not permitted.');
 }
 
-function createHiringPost(){
-    if (!currentUser) return alert('Login first.');
-    const userRec = getUser(currentUser.name);
-    if (!userRec) return alert('User record missing.');
-    // Enforce role restriction
-    if (!(userRec.role === 'server developer' || userRec.role === 'admin')) return alert('Only server developers or admins can create hiring posts.');
-    // Reset monthly counter if needed
-    const now = Date.now();
-    if (!userRec.lastReset || now - userRec.lastReset > 30*24*3600*1000) {
-        userRec.postsThisMonth = 0; userRec.lastReset = now;
-    }
-    if (userRec.postsThisMonth >= 3) return alert('You reached 3 hiring posts this month.');
-    const title = (document.getElementById('h-title').value || '').trim();
-    const price = (document.getElementById('h-price').value || '').trim();
-    const desc = (document.getElementById('h-desc').value || '').trim();
-    if (!title || !price || !desc) return alert('Fill title, price and description.');
-    const id = 'hp_' + Date.now() + '_' + Math.random().toString(36,8);
-    hiringPosts.push({ id, owner: currentUser.name, title, price, desc, ts: Date.now() });
-    userRec.postsThisMonth = (userRec.postsThisMonth || 0) + 1;
-    saveAll(); renderHiring(); closeAll();
-    alert('Hiring post created. Payments outside the website.');
-}
-
-/* ----------------------
-   Applications (Apply)
-   ---------------------- */
+/* ==========================
+   Applications (admin review)
+   ========================== */
 function openApplyModal(){ openModal('apply-modal','apply-card'); }
 function submitApplication(){
     if (!currentUser) return alert('Login first to apply.');
+    const discord = (document.getElementById('apply-discord').value || '').trim();
     const txt = (document.getElementById('apply-msg').value || '').trim();
-    if (!txt) return alert('Write some info about your experience & rates.');
-    applications.push({ id:'app_'+Date.now(), user: currentUser.name, text: txt, ts: Date.now() });
-    saveAll(); closeAll();
-    alert('Application submitted. Admins will review and can assign the role.');
+    if (!discord || !txt) return alert('Please include your Discord handle and a short description.');
+    const id = 'app_' + Date.now() + '_' + Math.random().toString(36,6);
+    applications.push({ id, user: currentUser.name, discord, text: txt, ts: Date.now() });
+    saveAll(); closeAll(); alert('Application submitted. Admins will review and can assign the "server developer" role.');
+}
+function openApplicationsModal(){
+    if (!currentUser || currentUser.role !== 'admin') return alert('Only admins can view applications.');
+    const list = document.getElementById('applications-list');
+    list.innerHTML = '';
+    applications.forEach(a=>{
+        const el = document.createElement('div');
+        el.className = 'bg-gray-900/30 p-3 rounded-lg border border-white/5 flex justify-between items-start';
+        el.innerHTML = `
+            <div>
+                <div class="font-bold">${escapeHtml(a.user)}</div>
+                <div class="text-xs text-gray-400">Discord: ${escapeHtml(a.discord)}</div>
+                <div class="text-sm text-gray-200 mt-1">${escapeHtml(a.text)}</div>
+                <div class="text-xs text-gray-400 mt-1">${new Date(a.ts).toLocaleString()}</div>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button class="pill text-sm" onclick="acceptApplication('${a.id}')">Accept</button>
+                <button class="pill text-sm text-red-400" onclick="rejectApplication('${a.id}')">Reject</button>
+            </div>
+        `;
+        list.appendChild(el);
+    });
+    openModal('applications-modal','applications-card');
+}
+function acceptApplication(appId){
+    const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
+    const a = applications[idx];
+    // assign role
+    const u = getUser(a.user);
+    if (!u) return alert('Applicant user not found.');
+    u.role = 'server developer';
+    saveAll();
+    // remove application
+    applications.splice(idx,1); saveAll();
+    openApplicationsModal(); renderHiring();
+    alert(a.user + ' has been granted the "server developer" role.');
+}
+function rejectApplication(appId){
+    const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
+    const a = applications[idx];
+    applications.splice(idx,1); saveAll();
+    openApplicationsModal();
+    alert('Rejected application of ' + a.user);
 }
 
-/* ----------------------
-   Admin actions: manage roles
-   ---------------------- */
+/* ==========================
+   Admin role assignment helper (fallback)
+   ========================== */
 function adminAssignRole(userName, role){
     if (!currentUser || currentUser.role !== 'admin') return alert('Only admins can assign roles.');
     const u = getUser(userName);
@@ -643,11 +892,9 @@ function adminAssignRole(userName, role){
     alert(`Assigned role ${role} to ${userName}`);
 }
 
-/* ----------------------
-   Utilities & Startup
-   ---------------------- */
-function escapeHtml(str){ return String(str).replace(/[&<>"'`]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[s])); }
-
+/* ==========================
+   Startup & event wiring
+   ========================== */
 document.getElementById('send-btn').addEventListener('click', sendMessage);
 document.getElementById('forum-input').addEventListener('keydown', (e)=> { if (e.key === 'Enter') sendMessage(); });
 document.getElementById('create-hiring-btn').addEventListener('click', ()=>{
@@ -657,20 +904,21 @@ document.getElementById('create-hiring-btn').addEventListener('click', ()=>{
     openModal('create-hiring-modal','create-hiring-card');
 });
 
-/* Language change persistence */
+// language change
 function changeLang(lang){ currentLang = lang; localStorage.setItem('lang', lang); updateHeaderAndLang(); populateCards(); populateChart(); }
 
-/* Remove message helper */
-window.removeMessage = removeMessage;
-window.openChatWith = openChatWith;
-window.removeHiring = removeHiring;
-window.openApplyModal = openApplyModal;
+// expose functions to window for inline handlers
 window.openLoginModal = openLoginModal;
+window.openApplyModal = openApplyModal;
 window.openVersionsModal = openVersionsModal;
 window.openDetailModal = openDetailModal;
+window.openHiringChat = openHiringChat;
+window.openApplicationsModal = openApplicationsModal;
 window.adminAssignRole = adminAssignRole;
+window.openDMFromUser = openDMFromUser;
+window.addFriendFromMsg = addFriendFromMsg;
 
-/* Initialize UI */
+// initial render
 function init(){
     updateHeaderAndLang();
     populateCards();
@@ -679,46 +927,16 @@ function init(){
     renderMessages();
     renderHiring();
     lucide.createIcons();
-    // Simple keyboard close
+    // seed a neutral system message if empty
+    if (messages.length === 0) {
+        messages.push({ id:'m_sys_1', user:'System', role:'system', text: 'Welcome to Forums Chat! Create an account to post, DM others and apply for Server Developer.', ts: Date.now() });
+        saveAll();
+        renderMessages();
+    }
+    // keyboard close
     document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeAll(); });
 }
 init();
-
-/* Expose some debug helpers (optional) */
-window.createHiringPost = createHiringPost;
-window.submitApplication = submitApplication;
-
-/* ----------------------
-   Seed sample messages for first load
-   ---------------------- */
-if (messages.length === 0) {
-    messages.push({ id:'m_sys_1', user:'nodropedd', role:'admin', text: 'Welcome to Forums Chat! Admin can remove messages and manage roles.', ts: Date.now() });
-    saveAll(); renderMessages();
-}
-
-/* ----------------------
-   Translation of user's instruction (requested)
-   ---------------------- */
-/* The following are translations of the user's last request.
-   English (as you asked) and Spanish translations are provided below.
-   These are just literal translations of the instruction text and are not used anywhere in the UI automatically.
-*/
-
-/* ENGLISH:
-On English it says "Niveles de programar. Wiki por Nodropedd_" — make that it says in English:
-"Levels of programming of Minecraft. Wiki by Nodropedd_".
-Also in Spanish say: "Niveles de programar de Minecraft. Wiki por Nodropedd_".
-
-Add a forums part which isn't automatically translated (obviously). If you scroll down you can see forums chat (also translated to Spanish the "forums chat" subtitle) and you can type a message. You must choose a name and a tiny password or login with a name and password. The user called "nodropedd" will be admin and able to remove messages from forums. Replace the current sign-in button with a guest emoji icon that opens login/register. When logged in you can change language and see your role: "Member" or "admin" or "server developer". Make the admin be able to remove messages and assign/remove roles. Add a button for "Apply for server developer" which will give access to be paid for making servers and not be punished, and add announcements at the Hiring part (to be explained later). Add a special role and note: "fraud at hiring part will be punished". For the hiring part, people can search for a dev to hire; the dev will list prices and capabilities and can chat with them. People can hire a developer by chatting and agreeing a trade; users with "server developer" or "admin" roles can create up to 3 hiring posts per month. Admins can also remove hiring posts. Payments happen outside the website (they pay in chat). Finally translate what I said to Spanish and English.
-*/
-
-/* SPANISH:
-En inglés aparece "Niveles de programar. Wiki por Nodropedd_" — haz que en inglés diga:
-"Levels of programming of Minecraft. Wiki by Nodropedd_".
-Además en español debe decir: "Niveles de programar de Minecraft. Wiki por Nodropedd_".
-
-Añade una sección de foros que no se traduzca automáticamente (obviamente). Si te desplazas hacia abajo verás el chat de foros (también traducido al español el subtítulo "forums chat") y podrás escribir lo que quieras. Tienes que elegir un nombre y una contraseña pequeña o iniciar sesión con un nombre y contraseña. El usuario llamado "nodropedd" será administrador y podrá eliminar mensajes de los foros. Sustituye el botón de inicio de sesión actual por un icono emoji de invitado que abra iniciar sesión/registrarse. Al iniciar sesión podrás cambiar el idioma y ver tu rol: "Member", "admin" o "server developer". Haz que el administrador pueda eliminar mensajes y asignar/quitar roles. Añade un botón para "Apply for Server Developer" que te dará acceso para cobrar por hacer servidores y no ser castigado, y añade anuncios en la sección de contratación que explicarás después. Añade un rol especial y debajo una NOTA: "fraude en la sección de contratación será castigado". En la parte de contratación, la gente puede buscar a un desarrollador para contratar; el desarrollador podrá mostrar precios y qué puede hacer y chatear con él. La gente puede contratar al desarrollador chateando y acordando un trato justo. Usuarios con rol "server developer" o "admin" podrán crear hasta 3 anuncios de contratación por mes. El administrador también podrá eliminar anuncios de contratación. Los pagos serán fuera de la web (se pagará por chat). Finalmente, traduce lo que dije al español e inglés.
-*/
 
 </script>
 </body>
