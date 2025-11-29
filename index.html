@@ -1,575 +1,725 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Programación de Servidores</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts (Inter used for Tailwind default, but keeping Plus Jakarta Sans) -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
-    
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        /* Smooth transitions */
-        .smooth-transition {
-            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        /* Background Gradient Animation */
+        .smooth-transition { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
         .animated-bg {
             background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #0f172a);
             background-size: 400% 400%;
             animation: gradient 15s ease infinite;
         }
-
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Scrollbar hide */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Custom Scrollbar for Modals */
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: rgba(99, 102, 241, 0.5); /* indigo-500/50 */
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background-color: rgba(255, 255, 255, 0.05); /* white/5 */
-        }
-
-
-        /* Blur Classes for Background */
-        .blurred {
-            filter: blur(8px) brightness(0.7);
-            transform: scale(0.98);
-            pointer-events: none;
-        }
-
-        /* Animation for Chart Bars */
-        .chart-bar-fill {
-            width: 0;
-            transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
-        }
+        @keyframes gradient { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+        .no-scrollbar::-webkit-scrollbar { display:none } .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+        .custom-scrollbar::-webkit-scrollbar{ width:8px } .custom-scrollbar::-webkit-scrollbar-thumb{ background-color: rgba(99,102,241,0.5); border-radius:4px }
+        .custom-scrollbar::-webkit-scrollbar-track{ background-color: rgba(255,255,255,0.05) }
+        .blurred { filter: blur(8px) brightness(0.7); transform: scale(0.98); pointer-events: none; }
+        .chart-bar-fill { width:0; transition: width 1.5s cubic-bezier(0.22,1,0.36,1); }
+        /* tiny avatars */
+        .role-badge { font-size: 11px; padding: 2px 6px; border-radius: 999px; }
+        .guest-icon { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:999px; background:rgba(255,255,255,0.03); }
+        /* forum/hiring */
+        .msg { padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.03); }
+        .msg-admin { background: rgba(236,72,153,0.08); border:1px solid rgba(236,72,153,0.12) }
+        .small { font-size:12px }
+        .pill { padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04) }
     </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden animated-bg selection:bg-indigo-500 selection:text-white">
 
-    <!-- CONTENEDOR PRINCIPAL (Lo que se desenfoca) -->
-    <div id="main-canvas" class="h-full w-full flex flex-col smooth-transition origin-center">
-        
-        <!-- Header -->
-        <header class="flex flex-col md:flex-row justify-between items-center px-8 py-6 z-10 gap-4">
-            <div class="text-center md:text-left">
-                <h1 id="app-title" class="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">
-                    Programación de Servidores
-                </h1>
-                <p id="app-subtitle" class="text-gray-300 text-sm font-medium mt-1 tracking-wide">Niveles de programar. Wiki por Nodropedd_</p>
+<div id="main-canvas" class="h-full w-full flex flex-col smooth-transition origin-center">
+    <header class="flex flex-col md:flex-row justify-between items-center px-6 py-5 z-10 gap-4">
+        <div class="text-center md:text-left">
+            <h1 id="app-title" class="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Programación de Servidores</h1>
+            <p id="app-subtitle" class="text-gray-300 text-sm font-medium mt-1 tracking-wide">Niveles de programar. Wiki por Nodropedd_</p>
+        </div>
+        <div class="flex gap-3 items-center">
+            <button onclick="openVersionsModal()" class="group relative p-3 px-4 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/30 transition-all duration-300 shadow-lg backdrop-blur-md flex items-center gap-2 text-sm font-medium text-indigo-300 hover:text-white">
+                <i data-lucide="server" class="w-5 h-5"></i><span id="versions-btn-text">Ver Versiones Core</span>
+            </button>
+
+            <!-- replaced "signs" with guest/login icon -->
+            <button id="guest-btn" onclick="openLoginModal()" class="guest-icon hover:scale-105 transition-transform" title="Login / Register">
+                <span class="text-2xl">👤</span>
+            </button>
+
+            <button onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
+                <i data-lucide="settings" class="w-6 h-6 text-gray-300 group-hover:text-white"></i>
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow overflow-y-auto no-scrollbar px-4 pb-10 scroll-smooth">
+        <div id="cards-grid" class="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4"></div>
+
+        <div class="container mx-auto p-4 mt-8 mb-10">
+            <h2 class="text-2xl font-bold mb-6 text-center text-indigo-300 border-t border-white/10 pt-8">Gráfica de Complejidad Técnica</h2>
+            <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-6 border border-white/5 shadow-2xl">
+                <div id="difficulty-chart" class="flex flex-col gap-3"></div>
             </div>
-            
-            <div class="flex gap-3">
-                <!-- Botón Versiones Core -->
-                <button onclick="openVersionsModal()" class="group relative p-3 px-5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/30 transition-all duration-300 shadow-lg backdrop-blur-md flex items-center gap-2 text-sm font-medium text-indigo-300 hover:text-white">
-                    <i data-lucide="server" class="w-5 h-5"></i>
-                    <span id="versions-btn-text">Ver Versiones Core</span>
-                </button>
+        </div>
 
-                <!-- Botón Ajustes -->
-                <button onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
-                    <i data-lucide="settings" class="w-6 h-6 text-gray-300 group-hover:text-white"></i>
-                </button>
-            </div>
-        </header>
-
-        <!-- Main Content Area -->
-        <main class="flex-grow overflow-y-auto no-scrollbar px-4 pb-20 scroll-smooth">
-            <!-- Grid Scrollable -->
-            <div id="cards-grid" class="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4">
-                <!-- JS inyectará las tarjetas aquí -->
-            </div>
-
-            <!-- Sección Gráfica de Barras -->
-            <div class="container mx-auto p-4 mt-12 mb-12">
-                <h2 class="text-2xl font-bold mb-6 text-center text-indigo-300 border-t border-white/10 pt-8">Gráfica de Complejidad Técnica</h2>
-                <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-8 border border-white/5 shadow-2xl">
-                    <div id="difficulty-chart" class="flex flex-col gap-3">
-                        <!-- Chart rows injected by JS -->
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
-
-    <!-- CAPA DE MODALES (Overlay) -->
-
-    <!-- Modal de Versiones Core -->
-    <div id="versions-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
-        <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
-        
-        <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition relative overflow-hidden group" id="versions-card">
-            
-            <div class="relative z-10 flex flex-col h-full max-h-[90vh]">
-                <div class="flex justify-between items-start mb-6 flex-shrink-0">
+        <!-- FORUMS SECTION (not auto-translated content area) -->
+        <section id="forums-section" class="container mx-auto p-4 mt-6">
+            <div class="bg-gray-800/60 border border-white/5 rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
                     <div>
-                        <h2 id="v-title" class="text-3xl font-bold text-white">Versiones y Forks de Servidor</h2>
-                        <p class="text-gray-400 font-medium text-sm mt-1">APIs y Motores principales de la comunidad.</p>
+                        <!-- The "forums chat" subtitle translated to Spanish below as requested; the forum content itself is user-generated and not auto-translated -->
+                        <h3 class="text-xl font-bold">Forums Chat</h3>
+                        <p class="text-sm text-gray-400">Foros - Chat (esta sección no se traduce automáticamente)</p>
                     </div>
-                    <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20 transition-colors">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
+                    <div class="flex items-center gap-3">
+                        <div id="current-user-badge" class="pill small">Guest</div>
+                        <div id="current-user-role" class="role-badge text-xs text-gray-200 hidden"></div>
+                        <button class="pill text-sm" onclick="openApplyModal()">Apply for Server Developer</button>
+                    </div>
                 </div>
 
-                <div class="overflow-x-auto overflow-y-auto pr-2 custom-scrollbar">
-                    <table class="min-w-full table-auto text-sm">
-                        <thead class="sticky top-0 bg-gray-700/70 backdrop-blur-sm">
-                            <tr>
-                                <th class="p-3 text-left text-xs font-bold text-gray-300 uppercase tracking-wider">Nombre</th>
-                                <th class="p-3 text-left text-xs font-bold text-gray-300 uppercase tracking-wider hidden sm:table-cell">Tipo</th>
-                                <th class="p-3 text-left text-xs font-bold text-gray-300 uppercase tracking-wider hidden lg:table-cell">Año</th>
-                                <th class="p-3 text-left text-xs font-bold text-gray-300 uppercase tracking-wider">Uso Principal</th>
-                                <th class="p-3 text-left text-xs font-bold text-gray-300 uppercase tracking-wider hidden md:table-cell">Curiosidad</th>
-                            </tr>
-                        </thead>
-                        <tbody id="versions-tbody" class="divide-y divide-white/5">
-                            <!-- Data injected by JS -->
-                        </tbody>
-                    </table>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2 flex flex-col gap-3">
+                        <div id="forum-messages" class="flex flex-col gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-2 rounded-lg"></div>
+
+                        <div class="flex gap-2 mt-2">
+                            <input id="forum-input" placeholder="Write a message..." class="flex-grow px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5 focus:outline-none" />
+                            <button id="send-btn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500">Send</button>
+                        </div>
+                        <p class="text-xs text-gray-400 mt-1">Choose a name and a tiny password in the login/register modal to post messages. Admin "nodropedd" can remove messages.</p>
+                    </div>
+
+                    <div class="flex flex-col gap-3">
+                        <div class="bg-gray-800/50 rounded-xl p-3 border border-white/5">
+                            <h4 class="font-bold">Quick Login</h4>
+                            <p class="text-sm text-gray-400">Use the top-right guest icon to login/register. Default admin: nodropedd</p>
+                            <div class="flex gap-2 mt-2">
+                                <button class="pill" onclick="openLoginModal()">Login / Register</button>
+                                <button class="pill" onclick="openApplyModal()">Apply</button>
+                            </div>
+                        </div>
+
+                        <!-- Hiring Panel -->
+                        <div id="hiring-panel" class="bg-gray-800/50 rounded-xl p-3 border border-white/5 flex flex-col gap-3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold">Hiring Board</h4>
+                                <div class="text-xs text-gray-400">Payments happen outside this website</div>
+                            </div>
+                            <div id="hiring-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto custom-scrollbar"></div>
+
+                            <div class="flex gap-2">
+                                <button id="create-hiring-btn" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500">Create Hiring Post</button>
+                            </div>
+                            <p class="text-xs text-gray-400">NOTE: Fraud at hiring part will be punished.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<!-- MODALS -->
+<!-- Versions Modal -->
+<div id="versions-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="versions-card">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h2 id="v-title" class="text-2xl font-bold">Versiones y Forks de Servidor</h2>
+                <p class="text-sm text-gray-400">APIs y Motores principales de la comunidad.</p>
+            </div>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        <div class="overflow-auto max-h-[60vh] custom-scrollbar">
+            <table class="min-w-full text-sm">
+                <thead class="sticky top-0 bg-gray-700/70">
+                    <tr class="text-left text-xs text-gray-300 uppercase">
+                        <th class="p-3">Nombre</th><th class="p-3 hidden sm:table-cell">Tipo</th><th class="p-3 hidden lg:table-cell">Año</th><th class="p-3">Uso Principal</th><th class="p-3 hidden md:table-cell">Curiosidad</th>
+                    </tr>
+                </thead>
+                <tbody id="versions-tbody" class="divide-y divide-white/5"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Detail Modal -->
+<div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 max-w-2xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="detail-card">
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <span id="m-level" class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1 block">Nivel 1</span>
+                <h2 id="m-title" class="text-2xl font-bold text-white">.yml</h2>
+                <p id="m-ext" class="text-gray-400 font-mono text-sm mt-1">YAML Configuration</p>
+            </div>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-4">
+            <div>
+                <h3 id="lbl-whatis" class="text-xs text-gray-500 uppercase font-bold mb-2">Qué es</h3>
+                <p id="m-whatis" class="text-gray-200 text-sm">Descripción...</p>
+            </div>
+            <div>
+                <h3 id="lbl-whatdo" class="text-xs text-gray-500 uppercase font-bold mb-2">Qué haces</h3>
+                <p id="m-whatdo" class="text-gray-200 text-sm">Acción...</p>
+            </div>
+            <div>
+                <div class="flex justify-between items-end mb-2">
+                    <h3 id="lbl-prog" class="text-xs text-gray-500 uppercase font-bold">Nivel de Programación</h3>
+                    <span id="m-prog-val" class="text-sm font-bold text-indigo-400">Bajo</span>
+                </div>
+                <div class="h-3 w-full bg-gray-700/50 rounded-full overflow-hidden">
+                    <div id="m-bar" class="h-full bg-indigo-500 rounded-full w-0"></div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
+<!-- Settings Modal -->
+<div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0"></div>
+    <div class="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-80 shadow-2xl transform scale-95 smooth-transition" id="settings-card">
+        <h3 id="st-title" class="text-xl font-bold mb-4 text-center">Ajustes / Settings</h3>
+        <div class="space-y-3">
+            <button onclick="changeLang('es')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 transition-all group">
+                <span class="font-medium">Español</span> <span id="check-es" class="opacity-100 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
+            </button>
+            <button onclick="changeLang('en')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 transition-all group">
+                <span class="font-medium">English</span> <span id="check-en" class="opacity-0 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
+            </button>
+        </div>
+    </div>
+</div>
 
-    <!-- Modal de Detalles -->
-    <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
-        <!-- Backdrop clickable para cerrar -->
-        <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
-        
-        <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-2xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition relative overflow-hidden group" id="detail-card">
-            <!-- Glow effect behind -->
-            <div id="modal-glow" class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500 rounded-full blur-[100px] opacity-20 pointer-events-none transition-colors duration-500"></div>
+<!-- Login/Register Modal -->
+<div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="login-card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Login / Register</h3>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
 
-            <div class="relative z-10 flex flex-col h-full max-h-[80vh]">
-                <div class="flex justify-between items-start mb-6 flex-shrink-0">
-                    <div>
-                        <span id="m-level" class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1 block">Nivel 1</span>
-                        <h2 id="m-title" class="text-3xl font-bold text-white">.yml</h2>
-                        <p id="m-ext" class="text-gray-400 font-mono text-sm mt-1">YAML Configuration</p>
-                    </div>
-                    <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20 transition-colors">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
+        <div class="space-y-3">
+            <input id="login-name" placeholder="Choose a name (e.g. alice)" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <input id="login-pass" placeholder="Tiny password" type="password" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <div class="flex gap-2">
+                <button class="w-1/2 py-2 rounded-xl bg-indigo-600" onclick="registerUser()">Register</button>
+                <button class="w-1/2 py-2 rounded-xl bg-emerald-600" onclick="loginUser()">Login</button>
+            </div>
+            <p class="text-xs text-gray-400">The user "nodropedd" exists by default as admin. Password can be 'admin' (change later).</p>
+        </div>
+    </div>
+</div>
 
-                <div class="space-y-6 overflow-y-auto pr-2 custom-scrollbar">
-                    <div class="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-colors">
-                        <h3 id="lbl-whatis" class="text-xs text-gray-500 uppercase font-bold mb-2">Qué es</h3>
-                        <p id="m-whatis" class="text-gray-200 leading-relaxed text-sm md:text-base">Descripción...</p>
-                    </div>
-
-                    <div class="bg-white/5 rounded-xl p-5 border border-white/5 hover:border-white/10 transition-colors">
-                        <h3 id="lbl-whatdo" class="text-xs text-gray-500 uppercase font-bold mb-2">Qué haces</h3>
-                        <p id="m-whatdo" class="text-gray-200 leading-relaxed text-sm md:text-base">Acción...</p>
-                    </div>
-
-                    <div class="pb-2">
-                        <div class="flex justify-between items-end mb-2">
-                            <h3 id="lbl-prog" class="text-xs text-gray-500 uppercase font-bold">Nivel de Programación</h3>
-                            <span id="m-prog-val" class="text-sm font-bold text-indigo-400">Bajo</span>
-                        </div>
-                        <div class="h-3 w-full bg-gray-700/50 rounded-full overflow-hidden backdrop-blur-sm border border-white/5">
-                            <div id="m-bar" class="h-full bg-indigo-500 rounded-full transition-all duration-1000 ease-out w-0 shadow-[0_0_15px_rgba(99,102,241,0.5)]"></div>
-                        </div>
-                    </div>
-                </div>
+<!-- Apply Modal -->
+<div id="apply-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="apply-card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Apply for Server Developer</h3>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-3">
+            <p class="text-sm text-gray-300">Applications will be reviewed by admins. If accepted you'll receive the "server developer" role and permissions to create hiring posts (up to 3 per month).</p>
+            <textarea id="apply-msg" rows="5" placeholder="Describe your experience & hourly rate..." class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5"></textarea>
+            <div class="flex gap-2">
+                <button class="w-full py-2 rounded-xl bg-indigo-600" onclick="submitApplication()">Submit Application</button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Modal de Ajustes (Settings) -->
-    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
-        <div onclick="closeAll()" class="absolute inset-0"></div>
-        
-        <div class="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-80 shadow-2xl transform scale-95 smooth-transition" id="settings-card">
-            <h3 id="st-title" class="text-xl font-bold mb-4 text-center">Ajustes / Settings</h3>
-            
-            <div class="space-y-3">
-                <button onclick="changeLang('es')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 hover:border-indigo-500/50 transition-all group">
-                    <span class="font-medium">Español</span>
-                    <span id="check-es" class="opacity-100 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
-                </button>
-                <button onclick="changeLang('en')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 hover:border-indigo-500/50 transition-all group">
-                    <span class="font-medium">English</span>
-                    <span id="check-en" class="opacity-0 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
-                </button>
+<!-- Create Hiring Modal -->
+<div id="create-hiring-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="create-hiring-card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Create Hiring Post</h3>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-3">
+            <input id="h-title" placeholder="Title (e.g. 'Full server setup')" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <input id="h-price" placeholder="Price (e.g. $50)" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <textarea id="h-desc" rows="4" placeholder="Describe services, skills, what you can do..." class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5"></textarea>
+            <div class="flex gap-2">
+                <button class="w-full py-2 rounded-xl bg-emerald-600" onclick="createHiringPost()">Create Post</button>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // --- DATA OBJECT ---
-        const content = {
-            es: {
-                appTitle: "Programación de Servidores",
-                appSubtitle: "Niveles de programar. Wiki por Nodropedd_",
-                settingsTitle: "Idioma / Language",
-                versionsBtn: "Ver Versiones Core",
-                versionsTitle: "Versiones y Forks de Servidor",
-                lblWhatIs: "EXPLICACIÓN DETALLADA",
-                lblWhatDo: "TAREAS Y RESPONSABILIDADES",
-                lblProg: "COMPLEJIDAD TÉCNICA",
-                levels: [
-                    { id: 0, title: "Comandos", ext: "/setblock /execute", color: "text-gray-400", barColor: "bg-gray-500", progress: "2%", 
-                      whatIs: "El nivel más básico de interacción técnica. Se refiere al uso de comandos nativos de Minecraft (Vanilla) o comandos administrativos proporcionados por plugins ya instalados. No implica editar archivos externos, sino interactuar directamente con el chat o la consola del servidor.", 
-                      whatDo: "Ejecutar lógica simple in-game como '/setblock' para poner bloques, '/summon' para entidades, creación de regiones con WorldGuard ('/rg create'), configuración de cajas de botín ('/excellent crates') o gestión de permisos básicos. Se basa puramente en la memorización de sintaxis.", 
-                      prog: "Nula. Solo memorización." },
-                    { id: 1, title: ".yml", ext: "YAML Config", color: "text-emerald-400", barColor: "bg-emerald-500", progress: "10%", 
-                      whatIs: "YAML (YAML Ain't Markup Language) es el estándar universal para la configuración de plugins en el ecosistema Bukkit/Spigot. Son archivos de texto legibles diseñados para que los administradores ajusten el comportamiento de los plugins sin tocar el código fuente.", 
-                      whatDo: "Modificación de mensajes de bienvenida, traducción de textos (messages.yml), ajuste de parámetros numéricos (daño, cooldowns, precios), activación de 'features' (true/false) y definición de permisos. Es la base de cualquier servidor configurado.", 
-                      prog: "Muy Baja. Sintaxis de indentación." },
-                    { id: 2, title: ".json", ext: "JSON Data", color: "text-teal-400", barColor: "bg-teal-500", progress: "20%", 
-                      whatIs: "JSON es un formato de texto estricto utilizado nativamente por Mojang. Es esencial para Datapacks, Loot Tables (tablas de botín), Advancements (logros) y configuración de texturas. A diferencia de YAML, un error de coma o llave rompe todo el archivo.", 
-                      whatDo: "Diseñar tablas de drop personalizadas para mobs, crear recetas de crafteo custom, modificar el comportamiento de aldeanos y crear sistemas mediante Datapacks que alteran la mecánica vanilla del juego sin mods.", 
-                      prog: "Básica. Estructuras y validación." },
-                    { id: 3, title: ".toml", ext: "TOML / INI", color: "text-cyan-400", barColor: "bg-cyan-500", progress: "30%", 
-                      whatIs: "Formatos de configuración más modernos y estrictos que YAML. Se encuentran principalmente en proxies de red como Velocity, en el archivo server.properties o en mods de la comunidad técnica. TOML es valorado por su precisión.", 
-                      whatDo: "Configuración de redes BungeeCord/Velocity (forwarding, puertos), optimización de rendimiento del servidor (Aikar flags, purpur.yml) y ajuste fino de mods técnicos. Requiere entender cómo los servidores se comunican entre sí.", 
-                      prog: "Baja/Media. Configuración técnica." },
-                    { id: 4, title: ".db", ext: "SQL Database", color: "text-sky-400", barColor: "bg-sky-500", progress: "40%", 
-                      whatIs: "Gestión de bases de datos relacionales (MySQL, MariaDB, SQLite). Aquí es donde se guardan los datos persistentes críticos: dinero de los jugadores, clanes, logs de bloques, inventarios sincronizados, etc.", 
-                      whatDo: "Realizar consultas directas (Queries) para arreglar datos corruptos, migrar datos de un servidor a otro, fusionar bases de datos de distintos modos de juego y optimizar tiempos de respuesta. Es vital para redes grandes.", 
-                      prog: "Intermedia. Consultas SQL." },
-                    { id: 5, title: "Logic", ext: "ConditionalEvents", color: "text-blue-400", barColor: "bg-blue-500", progress: "50%", 
-                      whatIs: "Uso de plugins que interpretan lógica condicional compleja (ConditionalEvents, MyCommand, BetonQuest). Es el puente entre configurar y programar: no compilas código, pero escribes algoritmos.", 
-                      whatDo: "Crear mecánicas tipo 'Si el jugador mata a X mob con Y espada, entonces hay un 5% de probabilidad de ejecutar Z comando'. Permite crear minijuegos simples o sistemas de rol sin saber Java.", 
-                      prog: "Lógica. Condicionales y Variables." },
-                    { id: 6, title: ".sk", ext: "Skript Lang", color: "text-indigo-400", barColor: "bg-indigo-500", progress: "60%", 
-                      whatIs: "Skript es un lenguaje de programación interpretado diseñado para Minecraft que utiliza frases en inglés natural en lugar de código complejo. Es extremadamente potente para prototipado rápido.", 
-                      whatDo: "Programar sistemas completos de clanes, minijuegos personalizados (UHC, SkyWars), GUIs interactivas y habilidades especiales escribiendo frases como 'on damage: if victim is player...'.", 
-                      prog: "Alta (Scripting). Control de flujo." },
-                    { id: 7, title: ".js", ext: "JavaScript API", color: "text-violet-400", barColor: "bg-violet-500", progress: "70%", 
-                      whatIs: "Implementación de JavaScript dentro del entorno del servidor mediante motores como Denizen o ScriptCraft. Permite usar uno de los lenguajes más populares del mundo para interactuar con la API de Minecraft.", 
-                      whatDo: "Crear scripts que conectan el juego con páginas web en tiempo real (WebSockets), NPCs con inteligencia artificial básica, o sistemas dinámicos que requieren cálculos matemáticos complejos.", 
-                      prog: "Programación Web aplicada." },
-                    { id: 8, title: ".lua", ext: "Lua Scripting", color: "text-fuchsia-400", barColor: "bg-fuchsia-500", progress: "80%", 
-                      whatIs: "Lua es un lenguaje de script ligero, embebido en mods técnicos como ComputerCraft u OpenComputers. Se usa para la automatización dentro del mundo del juego.", 
-                      whatDo: "Programar 'Tortugas' (robots) para que minen automáticamente con algoritmos eficientes, crear sistemas de seguridad con pantallas táctiles in-game, o gestionar reactores nucleares de mods.", 
-                      prog: "Estructurada. Algoritmos." },
-                    { id: 9, title: "Java", ext: "Spigot / Paper API", color: "text-rose-400", barColor: "bg-rose-500", progress: "90%", 
-                      whatIs: "El desarrollo nativo de Plugins. Implica escribir código Java real, compilarlo y empaquetarlo en .jar. Usas la API de Spigot/Paper para manipular casi cualquier aspecto del servidor.", 
-                      whatDo: "Crear plugins profesionales desde cero, optimizar el rendimiento del servidor (profiling), manipular paquetes de red (ProtocolLib) y crear sistemas escalables y mantenibles.", 
-                      prog: "Avanzado. POO y Arquitectura." },
-                    { id: 10, title: "Modding", ext: "Forge / Fabric", color: "text-red-500", barColor: "bg-red-600", progress: "100%", 
-                      whatIs: "Modding implica alterar el cliente y el servidor, inyectando código en el juego base mediante Mixins. No estás limitado por lo que el servidor permite; cambias el juego. Es el primer nivel donde se modifica el código base del juego.", 
-                      whatDo: "Añadir nuevos bloques, dimensiones, mobs con modelos 3D complejos, alterar las físicas de movimiento, o reescribir el motor de renderizado. Requiere conocimientos profundos de la JVM.", 
-                      prog: "Experto. Ingeniería Inversa." },
-                    { id: 11, title: "Forks / Motor", ext: "Reescribir el Core", color: "text-amber-300", barColor: "bg-amber-400", progress: "110%", 
-                      whatIs: "Máxima dificultad. Consiste en tomar el código fuente de un motor de servidor existente (como Paper, Purpur o incluso el código base de Minecraft) y modificarlo directamente para crear un nuevo 'fork' o motor de servidor completamente personalizado.", 
-                      whatDo: "Implementar optimizaciones de rendimiento a nivel de tick, alterar la forma en que se manejan los chunks y la luz, añadir nuevas API y eventos que los plugins estándar no ofrecen, o aplicar parches de seguridad antes de que el código base lo haga. Ejemplos incluyen crear tu propia versión optimizada del motor Paper o desarrollar un nuevo proxy de red.", 
-                      prog: "Maestro. Arquitectura de Sistemas y Código Base." }
-                ],
-                serverVersions: [
-                    { name: "Bukkit", type: "API", year: 2010, updated: "No (Legado)", purpose: "API original para plugins. Sentó las bases para todos los motores de servidor posteriores.", curiosity: "Su desarrollo cesó en 2014 debido a una disputa legal por derechos de autor (DMCA)." },
-                    { name: "Spigot", type: "Core", year: 2012, updated: "Sí", purpose: "Fork de Bukkit optimizado. Mejora el rendimiento y el manejo de paquetes respecto a Bukkit.", curiosity: "El estándar de oro para servidores de Plugins por muchos años. Introduce las herramientas 'timings'." },
-                    { name: "Paper", type: "Core", year: 2016, updated: "Sí", purpose: "Fork de Spigot centrado en el rendimiento y la estabilidad. Corrige bugs de Vanilla y añade optimizaciones.", curiosity: "El motor más usado hoy en día para servidores de Plugins de alto rendimiento. Es la base de muchos otros forks." },
-                    { name: "Purpur", type: "Core", year: 2020, updated: "Sí", purpose: "Fork de Paper con mayor personalización de Vanilla y optimizaciones adicionales. Ideal para servidores grandes con requisitos específicos de juego.", curiosity: "Incluye cientos de opciones de configuración que permiten afinar el comportamiento del juego, como cambios en el PvP y la detección de exploits." },
-                    { name: "Pufferfish", type: "Core", year: 2021, updated: "Sí", purpose: "Fork de Paper. Ofrece optimizaciones aún más agresivas para servidores con gran cantidad de entidades o jugadores.", curiosity: "Se enfoca en reducir el uso de CPU y memoria sin comprometer demasiado la jugabilidad Vanilla." },
-                    { name: "BungeeCord", type: "Proxy", year: 2012, updated: "Sí", purpose: "El proxy original, utilizado para redes de servidores. Estable, pero generalmente menos eficiente que Velocity.", curiosity: "Fue desarrollado por SpigotMC y se convirtió en el estándar de facto para las redes de servidores durante casi una década." },
-                    { name: "Velocity", type: "Proxy", year: 2018, updated: "Sí", purpose: "Proxy moderno, ligero y eficiente. Utilizado para conectar múltiples servidores de Minecraft en una sola red.", curiosity: "Escrito desde cero para ser multihilo y es el reemplazo recomendado para BungeeCord." },
-                    { name: "Forge", type: "Modding", year: 2011, updated: "Sí", purpose: "Plataforma de modding para Java Edition. Permite a los mods modificar el cliente y el servidor a fondo.", curiosity: "El sistema de mods original, popularizado por packs como Tekkit y Feed The Beast (FTB). Dominó durante años." },
-                    { name: "Fabric", type: "Modding", year: 2018, updated: "Sí", purpose: "Plataforma de modding ligera y modular. Se actualiza rápidamente a las versiones de Minecraft.", curiosity: "Popular entre desarrolladores por su API minimalista y su velocidad de actualización, ideal para mods pequeños de calidad de vida." },
-                    { name: "Quilt", type: "Modding", year: 2022, updated: "Sí", purpose: "Fork de Fabric, enfocado en mayor estabilidad y estándares abiertos para el desarrollo de mods.", curiosity: "Busca mejorar la comunidad y la gobernanza del proyecto Fabric." },
-                    { name: "Sponge", type: "API", year: 2014, updated: "Sí", purpose: "API para crear 'Plugins' (que ellos llaman 'Mods') que funcionan tanto en Forge como en Vanilla, ofreciendo una alternativa a Bukkit.", curiosity: "Fue creado como respuesta a la caída de Bukkit, buscando ser una API más moderna e independiente del servidor base." },
-                    { name: "Magma", type: "Híbrido", year: 2019, updated: "Sí", purpose: "Motor que permite correr Plugins de Spigot junto con Mods de Forge en el mismo servidor.", curiosity: "Busca la compatibilidad total, aunque a menudo puede tener problemas de estabilidad debido a la complejidad de la integración." },
-                    { name: "PocketMine-MP", type: "Bedrock", year: 2013, updated: "Sí", purpose: "Implementación del servidor para Minecraft Bedrock (Pocket Edition) escrita en PHP.", curiosity: "Es uno de los pocos proyectos importantes escritos en PHP en lugar de Java/Kotlin, orientado a dispositivos móviles." }
-                ]
-            },
-            en: {
-                appTitle: "Server Programming",
-                appSubtitle: "Niveles de programar. Wiki por Nodropedd_",
-                settingsTitle: "Language / Idioma",
-                versionsBtn: "View Core Versions",
-                versionsTitle: "Server Versions and Forks",
-                lblWhatIs: "DETAILED EXPLANATION",
-                lblWhatDo: "TASKS AND RESPONSIBILITIES",
-                lblProg: "TECHNICAL COMPLEXITY",
-                levels: [
-                    { id: 0, title: "Commands", ext: "/setblock /execute", color: "text-gray-400", barColor: "bg-gray-500", progress: "2%", 
-                      whatIs: "The most basic level of technical interaction. Refers to using native Minecraft commands (Vanilla) or administrative commands from installed plugins. Does not involve editing external files.", 
-                      whatDo: "Execute simple in-game logic like '/setblock', '/summon', region creation with WorldGuard, or loot crate setup. Based purely on syntax memorization.", 
-                      prog: "None. Memorization." },
-                    { id: 1, title: ".yml", ext: "YAML Config", color: "text-emerald-400", barColor: "bg-emerald-500", progress: "10%", 
-                      whatIs: "YAML is the standard for plugin configuration. Readable text files designed for admins to tweak plugin behavior without touching source code.", 
-                      whatDo: "Modify welcome messages, translate text, adjust numeric parameters (damage, cooldowns), toggle features, and define permissions. The foundation of any server.", 
-                      prog: "Very Low. Syntax only." },
-                    { id: 2, title: ".json", ext: "JSON Data", color: "text-teal-400", barColor: "bg-teal-500", progress: "20%", 
-                      whatIs: "Strict text format used natively by Mojang. Essential for Datapacks, Loot Tables, Advancements, and texture configs. A single syntax error breaks the file.", 
-                      whatDo: "Design custom drop tables, create custom crafting recipes, modify villager behavior, and build Datapack systems that alter vanilla mechanics.", 
-                      prog: "Basic. Data structures." },
-                    { id: 3, title: ".toml", ext: "TOML / INI", color: "text-cyan-400", barColor: "bg-cyan-500", progress: "30%", 
-                      whatIs: "Modern, strict config formats found in proxies (Velocity) and technical mods. Valued for precision and mostly used for network settings.", 
-                      whatDo: "Configure BungeeCord/Velocity networks, optimize server performance (Aikar flags), and fine-tune technical mods.", 
-                      prog: "Low. Technical config." },
-                    { id: 4, title: ".db", ext: "SQL Database", color: "text-sky-400", barColor: "bg-sky-500", progress: "40%", 
-                      whatIs: "Relational database management (MySQL, SQLite). Stores critical persistent data like player money, clans, and logs.", 
-                      whatDo: "Run direct queries to fix corrupt data, migrate data between servers, merge databases, and optimize response times.", 
-                      prog: "Intermediate. SQL Logic." },
-                    { id: 5, title: "Logic", ext: "ConditionalEvents", color: "text-blue-400", barColor: "bg-blue-500", progress: "50%", 
-                      whatIs: "Using plugins that interpret complex conditional logic. The bridge between configuring and programming.", 
-                      whatDo: "Create mechanics like 'If player kills mob X with sword Y, 5% chance to run command Z'. Allows creating minigames without Java.", 
-                      prog: "Logic. Loops and conditions." },
-                    { id: 6, title: ".sk", ext: "Skript Lang", color: "text-indigo-400", barColor: "bg-indigo-500", progress: "60%", 
-                      whatIs: "Interpreted language using natural English sentences. Extremely powerful for rapid prototyping.", 
-                      whatDo: "Program full clan systems, custom minigames, interactive GUIs, and special abilities using simple English syntax.", 
-                      prog: "High Scripting." },
-                    { id: 7, title: ".js", ext: "JavaScript API", color: "text-violet-400", barColor: "bg-violet-500", progress: "70%", 
-                      whatIs: "JavaScript implementation inside Minecraft (Denizen/ScriptCraft). Connects the game with web technologies.", 
-                      whatDo: "Create scripts connecting game to websockets, AI NPCs, or dynamic systems requiring complex math.", 
-                      prog: "Web Programming applied." },
-                    { id: 8, title: ".lua", ext: "Lua Scripting", color: "text-fuchsia-400", barColor: "bg-fuchsia-500", progress: "80%", 
-                      whatIs: "Lightweight scripting embedded in technical mods (ComputerCraft). Used for in-game automation.", 
-                      whatDo: "Program 'Turtles' to mine automatically, create security systems, or manage nuclear reactors.", 
-                      prog: "Structured. Algorithms." },
-                    { id: 9, title: "Java", ext: "Spigot / Paper API", color: "text-rose-400", barColor: "bg-rose-500", progress: "90%", 
-                      whatIs: "Native Plugin Development. Writing real Java code, compiling, and packaging into .jar files.", 
-                      whatDo: "Create professional plugins from scratch, optimize server core, manipulate network packets, and build scalable systems.", 
-                      prog: "Advanced. Full OOP." },
-                    { id: 10, title: "Modding", ext: "Forge / Fabric", color: "text-red-500", barColor: "bg-red-600", progress: "100%", 
-                      whatIs: "Modding involves altering client and server code via Mixins. You are not limited by server permissions; you change the game. This is the first level where the game's core code is modified.", 
-                      whatDo: "Add new blocks, dimensions, 3D mobs, alter physics, or rewrite the rendering engine. Requires deep JVM knowledge.", 
-                      prog: "Expert. Reverse engineering." },
-                    { id: 11, title: "Forks / Engine", ext: "Rewrite the Core", color: "text-amber-300", barColor: "bg-amber-400", progress: "110%", 
-                      whatIs: "Maximum difficulty. Consists of taking the source code of an existing server engine (like Paper, Purpur, or even the base Minecraft code) and directly modifying it to create a new, completely customized 'fork' or server engine. Requires a deep understanding of network architecture, concurrency, and Minecraft's internal logic.", 
-                      whatDo: "Implement performance optimizations at the tick level, alter how chunks and light are handled, add new APIs and events not offered by standard plugins, or apply security patches before the base code does. Examples include creating your own optimized version of the Paper engine or developing a new network proxy.", 
-                      prog: "Master. Systems Architecture and Base Code." }
-                ],
-                serverVersions: [
-                    { name: "Bukkit", type: "API", year: 2010, updated: "No (Legacy)", purpose: "Original API for plugins. Set the foundation for all subsequent server engines.", curiosity: "Development ceased in 2014 due to a legal dispute over copyright (DMCA takedown)." },
-                    { name: "Spigot", type: "Core", year: 2012, updated: "Yes", purpose: "Optimized Bukkit fork. Improves performance and packet handling over Bukkit.", curiosity: "The golden standard for Plugin servers for many years. Introduced 'timings' tools." },
-                    { name: "Paper", type: "Core", year: 2016, updated: "Yes", purpose: "Spigot fork focused on performance and stability. Fixes Vanilla bugs and adds optimizations.", curiosity: "The most widely used engine today for high-performance Plugin servers. It is the base for many other forks." },
-                    { name: "Purpur", type: "Core", year: 2020, updated: "Yes", purpose: "Paper fork with greater Vanilla customization and additional optimizations. Ideal for large servers with specific game requirements.", curiosity: "Includes hundreds of configuration options that allow fine-tuning game behavior, such as PvP changes and exploit detection." },
-                    { name: "Pufferfish", type: "Core", year: 2021, updated: "Yes", purpose: "Paper fork. Offers even more aggressive optimizations for servers with a large number of entities or players.", curiosity: "Focuses on reducing CPU and memory usage without compromising too much Vanilla gameplay." },
-                    { name: "BungeeCord", type: "Proxy", year: 2012, updated: "Yes", purpose: "The original proxy, used for server networks. Stable, but generally less efficient than Velocity.", curiosity: "It was developed by SpigotMC and became the de facto standard for server networks for almost a decade." },
-                    { name: "Velocity", type: "Proxy", year: 2018, updated: "Yes", purpose: "Modern, lightweight, and efficient proxy. Used to connect multiple Minecraft servers into a single network.", curiosity: "Written from scratch to be multi-threaded and is the recommended replacement for BungeeCord." },
-                    { name: "Forge", type: "Modding", year: 2011, updated: "Yes", purpose: "Modding platform for Java Edition. Allows mods to thoroughly modify both the client and the server.", curiosity: "The original mod system, popularized by packs like Tekkit and Feed The Beast (FTB). Dominated for years." },
-                    { name: "Fabric", type: "Modding", year: 2018, updated: "Yes", purpose: "Lightweight, modular modding platform. Updates quickly to new Minecraft versions.", curiosity: "Popular among developers for its minimalist API and update speed, ideal for small quality-of-life mods." },
-                    { name: "Quilt", type: "Modding", year: 2022, updated: "Yes", purpose: "Fabric fork, focused on greater stability and open standards for mod development.", curiosity: "Seeks to improve the governance and community of the Fabric project." },
-                    { name: "Sponge", type: "API", year: 2014, updated: "Yes", purpose: "API for creating 'Plugins' (which they call 'Mods') that work on both Forge and Vanilla, offering an alternative to Bukkit.", curiosity: "It was created in response to the fall of Bukkit, aiming to be a more modern and server-independent API." },
-                    { name: "Magma", type: "Hybrid", year: 2019, updated: "Yes", purpose: "Engine that allows running Spigot Plugins along with Forge Mods on the same server.", curiosity: "Aims for total compatibility, though it can often have stability issues due to the complexity of the integration." },
-                    { name: "PocketMine-MP", type: "Bedrock", year: 2013, updated: "Yes", purpose: "Server implementation for Minecraft Bedrock (Pocket Edition) written in PHP.", curiosity: "It is one of the few major projects written in PHP instead of Java/Kotlin, oriented towards mobile devices." }
-                ]
-            }
-        };
+<script>
+/* ----------------------
+   Data & Initial State
+   ---------------------- */
+const content = {
+    es: {
+        appTitle: "Programación de Servidores",
+        appSubtitle: "Niveles de programar de Minecraft. Wiki por Nodropedd_",
+        settingsTitle: "Idioma / Language",
+        versionsBtn: "Ver Versiones Core"
+    },
+    en: {
+        appTitle: "Server Programming",
+        appSubtitle: "Levels of programming of Minecraft. Wiki by Nodropedd_",
+        settingsTitle: "Language / Idioma",
+        versionsBtn: "View Core Versions"
+    }
+};
 
-        // --- GLOBAL STATE & UTILS ---
-        let currentLang = localStorage.getItem('lang') || 'es';
-        let currentContent;
-        const mainCanvas = document.getElementById('main-canvas');
-        
-        const modals = [
-            { id: 'versions-modal', cardId: 'versions-card' },
-            { id: 'detail-modal', cardId: 'detail-card' },
-            { id: 'settings-modal', cardId: 'settings-card' }
-        ];
+let currentLang = localStorage.getItem('lang') || 'es';
+let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+let users = JSON.parse(localStorage.getItem('users') || 'null');
+let messages = JSON.parse(localStorage.getItem('messages') || 'null');
+let hiringPosts = JSON.parse(localStorage.getItem('hiringPosts') || 'null');
+let applications = JSON.parse(localStorage.getItem('applications') || 'null');
 
-        // --- CORE FUNCTIONS ---
+// Initialize storage defaults
+if (!users) {
+    users = [
+        // default admin
+        { name: "nodropedd", pass: "admin", role: "admin", postsThisMonth: 0, lastReset: Date.now() }
+    ];
+    localStorage.setItem('users', JSON.stringify(users));
+}
+if (!messages) { messages = []; localStorage.setItem('messages', JSON.stringify(messages)); }
+if (!hiringPosts) { hiringPosts = []; localStorage.setItem('hiringPosts', JSON.stringify(hiringPosts)); }
+if (!applications) { applications = []; localStorage.setItem('applications', JSON.stringify(applications)); }
 
-        function updateUI() {
-            currentContent = content[currentLang];
+/* ----------------------
+   UI Helpers
+   ---------------------- */
+function updateHeaderAndLang() {
+    document.getElementById('app-title').textContent = content[currentLang].appTitle;
+    document.getElementById('app-subtitle').textContent = content[currentLang].appSubtitle;
+    document.getElementById('versions-btn-text').textContent = content[currentLang].versionsBtn;
+    document.getElementById('check-es').style.opacity = currentLang === 'es' ? 1 : 0;
+    document.getElementById('check-en').style.opacity = currentLang === 'en' ? 1 : 0;
+}
 
-            // Update Header & Settings
-            document.getElementById('app-title').textContent = currentContent.appTitle;
-            document.getElementById('app-subtitle').textContent = currentContent.appSubtitle;
-            document.getElementById('versions-btn-text').textContent = currentContent.versionsBtn;
-            document.getElementById('v-title').textContent = currentContent.versionsTitle;
-            document.getElementById('st-title').textContent = currentContent.settingsTitle;
-            
-            // Update labels in the detail modal (even when closed)
-            document.getElementById('lbl-whatis').textContent = currentContent.lblWhatIs;
-            document.getElementById('lbl-whatdo').textContent = currentContent.lblWhatDo;
-            document.getElementById('lbl-prog').textContent = currentContent.lblProg;
+function saveAll() {
+    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('messages', JSON.stringify(messages));
+    localStorage.setItem('hiringPosts', JSON.stringify(hiringPosts));
+    localStorage.setItem('applications', JSON.stringify(applications));
+}
 
-            // Update language checks
-            document.getElementById('check-es').style.opacity = currentLang === 'es' ? 1 : 0;
-            document.getElementById('check-en').style.opacity = currentLang === 'en' ? 1 : 0;
+function getUser(name) { return users.find(u => u.name === name); }
+function isLogged() { return !!currentUser; }
 
-            populateCards();
-            populateChart();
+function refreshUserBadge() {
+    const badge = document.getElementById('current-user-badge');
+    const roleEl = document.getElementById('current-user-role');
+    if (currentUser) {
+        badge.textContent = currentUser.name;
+        roleEl.textContent = currentUser.role || 'Member';
+        roleEl.classList.remove('hidden');
+    } else {
+        badge.textContent = 'Guest';
+        roleEl.classList.add('hidden');
+    }
+}
 
-            // Re-render icons
-            lucide.createIcons();
-        }
+/* ----------------------
+   Cards & Chart (existing)
+   ---------------------- */
+// Keep the same levels & serverVersions data used earlier (simplified for brevity)
+const levels = [
+  { id:0,title:"Comandos",ext:"/setblock /execute",barColor:"bg-gray-500",progress:"2%",color:"text-gray-400",whatIs:"El nivel más básico.",whatDo:"Ejecutar comandos." , prog:"Nula."},
+  { id:1,title:".yml",ext:"YAML Config",barColor:"bg-emerald-500",progress:"10%",color:"text-emerald-400",whatIs:"YAML configs.",whatDo:"Editar plugins.",prog:"Muy Baja."},
+  { id:2,title:".json",ext:"JSON Data",barColor:"bg-teal-500",progress:"20%",color:"text-teal-400",whatIs:"JSON for datapacks.",whatDo:"Crear loot tables.",prog:"Básica."},
+  { id:3,title:".toml",ext:"TOML / INI",barColor:"bg-cyan-500",progress:"30%",color:"text-cyan-400",whatIs:"TOML/INI.",whatDo:"Proxies y configs.",prog:"Baja/Media."},
+  { id:4,title:".db",ext:"SQL Database",barColor:"bg-sky-500",progress:"40%",color:"text-sky-400",whatIs:"SQL DBs.",whatDo:"Migraciones y queries.",prog:"Intermedia."},
+  { id:5,title:"Logic",ext:"ConditionalEvents",barColor:"bg-blue-500",progress:"50%",color:"text-blue-400",whatIs:"Lógica condicional.",whatDo:"Sistemas sin Java.",prog:"Lógica."},
+  { id:6,title:".sk",ext:"Skript Lang",barColor:"bg-indigo-500",progress:"60%",color:"text-indigo-400",whatIs:"Skript.",whatDo:"Minijuegos.",prog:"Alta."},
+  { id:7,title:".js",ext:"JavaScript API",barColor:"bg-violet-500",progress:"70%",color:"text-violet-400",whatIs:"JS in server.",whatDo:"Conectar websockets.",prog:"Web."},
+  { id:8,title:".lua",ext:"Lua Scripting",barColor:"bg-fuchsia-500",progress:"80%",color:"text-fuchsia-400",whatIs:"Lua.",whatDo:"Automatización.",prog:"Estructurada."},
+  { id:9,title:"Java",ext:"Spigot / Paper API",barColor:"bg-rose-500",progress:"90%",color:"text-rose-400",whatIs:"Java plugins.",whatDo:"Plugins profesionales.",prog:"Avanzado."},
+  { id:10,title:"Modding",ext:"Forge / Fabric",barColor:"bg-red-600",progress:"100%",color:"text-red-500",whatIs:"Modding.",whatDo:"Agregar bloques/dimensiones.",prog:"Experto."},
+  { id:11,title:"Forks / Motor",ext:"Reescribir el Core",barColor:"bg-amber-400",progress:"110%",color:"text-amber-300",whatIs:"Forks.",whatDo:"Modificar el core.",prog:"Maestro."}
+];
 
-        function changeLang(lang) {
-            currentLang = lang;
-            localStorage.setItem('lang', lang);
-            closeAll();
-            updateUI();
-        }
+function populateCards(){
+    const grid = document.getElementById('cards-grid');
+    grid.innerHTML = '';
+    levels.forEach(level => {
+        const card = document.createElement('div');
+        card.className = 'p-6 rounded-2xl bg-gray-800/50 border border-white/5 shadow-xl cursor-pointer hover:bg-gray-700/60 smooth-transition flex flex-col justify-between';
+        card.onclick = ()=> openDetailModal(level);
+        card.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-widest ${level.color}">${(currentLang==='es'?'Nivel':'Level')} ${level.id+1}</span>
+                <div class="text-xs font-mono text-gray-400 bg-white/5 px-2 py-1 rounded-full">${level.ext}</div>
+            </div>
+            <div>
+                <h2 class="text-2xl font-extrabold text-white mt-3">${level.title}</h2>
+                <p class="text-gray-300 text-sm mt-1">${level.whatIs}</p>
+            </div>
+            <div class="pt-4 border-t border-white/5">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-gray-400 uppercase font-medium">${currentLang==='es'?'COMPLEJIDAD TÉCNICA':'TECHNICAL COMPLEXITY'}</span>
+                    <span class="text-sm font-bold ${level.color}">${level.prog}</span>
+                </div>
+                <div class="h-2 w-full bg-gray-700/50 rounded-full overflow-hidden">
+                    <div class="h-full ${level.barColor} rounded-full" style="width:${level.progress}"></div>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
 
-        function populateCards() {
-            const grid = document.getElementById('cards-grid');
-            grid.innerHTML = ''; // Clear previous cards
+function populateChart(){
+    const chart = document.getElementById('difficulty-chart');
+    chart.innerHTML = '';
+    levels.forEach(level=>{
+        const row = document.createElement('div');
+        row.className='flex items-center gap-4 py-2';
+        row.innerHTML = `
+            <div class="w-28 text-right text-xs font-medium text-gray-400">${level.title}</div>
+            <div class="flex-grow h-4 bg-gray-700/50 rounded-full overflow-hidden border border-white/5">
+                <div class="chart-bar-fill h-full ${level.barColor}" style="width:${level.progress}"></div>
+            </div>
+            <div class="w-10 text-left text-sm font-bold ${level.color}">${level.progress.replace('%','')}</div>
+        `;
+        chart.appendChild(row);
+    });
+}
 
-            currentContent.levels.forEach(level => {
-                const card = document.createElement('div');
-                card.classList.add('p-6', 'rounded-2xl', 'bg-gray-800/50', 'backdrop-blur-md', 'border', 'border-white/5', 'shadow-xl', 'cursor-pointer', 'hover:bg-gray-700/60', 'smooth-transition', 'flex', 'flex-col', 'justify-between', 'space-y-4');
-                
-                // Add click listener to open detail modal
-                card.onclick = () => openDetailModal(level);
+/* ----------------------
+   Modals & Detail
+   ---------------------- */
+const modals = [
+    { id: 'versions-modal', cardId: 'versions-card' },
+    { id: 'detail-modal', cardId: 'detail-card' },
+    { id: 'settings-modal', cardId: 'settings-card' },
+    { id: 'login-modal', cardId: 'login-card' },
+    { id: 'apply-modal', cardId: 'apply-card' },
+    { id: 'create-hiring-modal', cardId: 'create-hiring-card' }
+];
 
-                const html = `
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-bold uppercase tracking-widest ${level.color}">${currentLang === 'es' ? 'Nivel' : 'Level'} ${level.id + 1}</span>
-                        <div class="text-xs font-mono text-gray-400 bg-white/5 px-2 py-1 rounded-full">${level.ext}</div>
-                    </div>
+function openModal(modalId, cardId){
+    document.getElementById('main-canvas').classList.add('blurred');
+    const modal = document.getElementById(modalId);
+    const card = document.getElementById(cardId);
+    modal.classList.remove('opacity-0','pointer-events-none');
+    card.classList.remove('scale-90','translate-y-4');
+    card.classList.add('scale-100','translate-y-0');
+}
+function closeAll(){
+    document.getElementById('main-canvas').classList.remove('blurred');
+    modals.forEach(m=>{
+        const modal = document.getElementById(m.id);
+        const card = document.getElementById(m.cardId);
+        modal.classList.add('opacity-0','pointer-events-none');
+        if (card) { card.classList.add('scale-90','translate-y-4'); card.classList.remove('scale-100','translate-y-0'); }
+    });
+}
+
+function openVersionsModal(){ populateVersionsModal(); openModal('versions-modal','versions-card'); }
+function openDetailModal(level){
+    document.getElementById('m-level').textContent = `${currentLang==='es'?'Nivel':'Level'} ${level.id+1}`;
+    document.getElementById('m-title').textContent = level.title;
+    document.getElementById('m-ext').textContent = level.ext;
+    document.getElementById('m-whatis').textContent = level.whatIs;
+    document.getElementById('m-whatdo').textContent = level.whatDo;
+    document.getElementById('m-prog-val').textContent = level.prog;
+    const bar = document.getElementById('m-bar');
+    bar.style.width = '0%';
+    bar.className = `h-full ${level.barColor} rounded-full transition-all`;
+    setTimeout(()=> bar.style.width = level.progress, 60);
+    openModal('detail-modal','detail-card');
+}
+
+function populateVersionsModal(){
+    const tbody = document.getElementById('versions-tbody');
+    tbody.innerHTML = '';
+    const serverVersions = [
+        { name: "Bukkit", type: "API", year: 2010, purpose: "API original para plugins.", curiosity: "Desarrollo cesó en 2014." },
+        { name: "Spigot", type: "Core", year: 2012, purpose: "Fork de Bukkit optimizado.", curiosity: "Introdujo 'timings'." },
+        { name: "Paper", type: "Core", year: 2016, purpose: "Fork de Spigot centrado en rendimiento.", curiosity: "Muy usado hoy en día." },
+        { name: "Purpur", type: "Core", year: 2020, purpose: "Fork con más personalización.", curiosity: "Muchas opciones de config." },
+        { name: "Fabric", type: "Modding", year: 2018, purpose: "Plataforma de modding ligera.", curiosity: "Actualizaciones rápidas." },
+        { name: "Velocity", type: "Proxy", year: 2018, purpose: "Proxy moderno y eficiente.", curiosity: "Multihilo y recomendado." }
+    ];
+    serverVersions.forEach(v=>{
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-white/3';
+        tr.innerHTML = `<td class="p-3 font-bold">${v.name}</td><td class="p-3 hidden sm:table-cell">${v.type}</td><td class="p-3 hidden lg:table-cell">${v.year}</td><td class="p-3 text-xs">${v.purpose}</td><td class="p-3 hidden md:table-cell text-xs italic">${v.curiosity}</td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+/* ----------------------
+   Auth: Login / Register
+   ---------------------- */
+function openLoginModal(){ openModal('login-modal','login-card'); }
+function registerUser(){
+    const name = (document.getElementById('login-name').value || '').trim();
+    const pass = (document.getElementById('login-pass').value || '').trim();
+    if (!name || !pass) return alert('Provide name and tiny password.');
+    if (getUser(name)) return alert('User exists - please login or choose another name.');
+    const usr = { name, pass, role: 'member', postsThisMonth: 0, lastReset: Date.now() };
+    users.push(usr);
+    saveAll();
+    currentUser = { name: usr.name, role: usr.role };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    refreshUserBadge(); closeAll();
+    alert('Registered and logged in as ' + usr.name);
+}
+
+function loginUser(){
+    const name = (document.getElementById('login-name').value || '').trim();
+    const pass = (document.getElementById('login-pass').value || '').trim();
+    const u = getUser(name);
+    if (!u || u.pass !== pass) return alert('Invalid credentials.');
+    currentUser = { name: u.name, role: u.role };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    refreshUserBadge(); closeAll();
+    alert('Welcome back, ' + u.name);
+}
+
+/* ----------------------
+   Forum Messages
+   ---------------------- */
+function renderMessages(){
+    const container = document.getElementById('forum-messages');
+    container.innerHTML = '';
+    messages.forEach(m=>{
+        const el = document.createElement('div');
+        el.className = 'msg flex items-start gap-3';
+        if (m.user === 'nodropedd') el.classList.add('msg-admin');
+        el.innerHTML = `
+            <div class="w-10 flex flex-col items-center">
+                <div class="text-lg">${m.user==='nodropedd'?'👑':'🙂'}</div>
+                <div class="text-xs text-gray-400">${new Date(m.ts).toLocaleTimeString()}</div>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center justify-between gap-2">
                     <div>
-                        <h2 class="text-3xl font-extrabold text-white">${level.title}</h2>
-                        <p class="text-gray-300 text-sm mt-1">${level.whatIs.split('. ')[0]}...</p>
+                        <strong>${m.user}</strong>
+                        <span class="text-xs text-gray-400 ml-2">${m.role || 'Member'}</span>
                     </div>
-                    <div class="pt-4 border-t border-white/5">
-                        <div class="flex justify-between items-center mb-1">
-                            <span class="text-xs text-gray-400 uppercase font-medium">${currentContent.lblProg}</span>
-                            <span class="text-sm font-bold ${level.color}">${level.prog.split('. ')[0]}</span>
-                        </div>
-                        <div class="h-2 w-full bg-gray-700/50 rounded-full overflow-hidden">
-                            <div class="h-full ${level.barColor} rounded-full" style="width: ${level.progress};"></div>
-                        </div>
+                    <div class="flex items-center gap-2">
+                        ${currentUser && (currentUser.role === 'admin' || currentUser.name === m.user) ? `<button class="text-xs text-red-400" onclick="removeMessage('${m.id}')">Remove</button>` : ''}
                     </div>
-                `;
-                card.innerHTML = html;
-                grid.appendChild(card);
-            });
-        }
+                </div>
+                <div class="mt-1 text-sm">${escapeHtml(m.text)}</div>
+            </div>
+        `;
+        container.appendChild(el);
+    });
+    container.scrollTop = container.scrollHeight;
+}
 
-        function populateChart() {
-            const chart = document.getElementById('difficulty-chart');
-            chart.innerHTML = '';
+function sendMessage(){
+    const txt = (document.getElementById('forum-input').value || '').trim();
+    if (!txt) return;
+    if (!currentUser) return alert('Please login/register first (top-right icon).');
+    const id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    const userRecord = getUser(currentUser.name);
+    const msg = { id, user: currentUser.name, role: userRecord?.role || 'member', text: txt, ts: Date.now() };
+    messages.push(msg); saveAll(); renderMessages();
+    document.getElementById('forum-input').value = '';
+}
 
-            currentContent.levels.forEach(level => {
-                const row = document.createElement('div');
-                row.classList.add('flex', 'items-center', 'gap-4', 'py-2');
-                const html = `
-                    <div class="w-24 text-right text-xs font-medium text-gray-400 flex-shrink-0">${level.title}</div>
-                    <div class="flex-grow h-4 bg-gray-700/50 rounded-full overflow-hidden border border-white/5">
-                        <div class="chart-bar-fill h-full ${level.barColor} rounded-full" style="width: ${level.progress};"></div>
-                    </div>
-                    <div class="w-10 text-left text-sm font-bold ${level.color} flex-shrink-0">${level.progress.replace('%', '')}</div>
-                `;
-                row.innerHTML = html;
-                chart.appendChild(row);
-            });
-        }
-        
-        function populateVersionsModal() {
-            const tbody = document.getElementById('versions-tbody');
-            tbody.innerHTML = '';
+function removeMessage(id){
+    if (!currentUser) return alert('Not allowed.');
+    const idx = messages.findIndex(m=>m.id===id); if (idx===-1) return;
+    // Admin or message owner can remove
+    if (currentUser.role === 'admin' || messages[idx].user === currentUser.name) {
+        messages.splice(idx,1); saveAll(); renderMessages();
+    } else alert('Not permitted.');
+}
 
-            currentContent.serverVersions.forEach(version => {
-                const row = document.createElement('tr');
-                row.classList.add('hover:bg-white/5', 'smooth-transition');
-                
-                const html = `
-                    <td class="p-3 font-bold text-white">${version.name}</td>
-                    <td class="p-3 text-gray-300 hidden sm:table-cell">${version.type}</td>
-                    <td class="p-3 text-gray-400 hidden lg:table-cell">${version.year}</td>
-                    <td class="p-3 text-gray-200 text-xs">${version.purpose}</td>
-                    <td class="p-3 text-gray-500 text-xs italic hidden md:table-cell">${version.curiosity}</td>
-                `;
-                row.innerHTML = html;
-                tbody.appendChild(row);
-            });
-        }
+/* ----------------------
+   Hiring Posts & Chats
+   ---------------------- */
+function renderHiring(){
+    const list = document.getElementById('hiring-list');
+    list.innerHTML = '';
+    hiringPosts.forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'bg-gray-900/30 p-3 rounded-lg border border-white/5';
+        el.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="font-bold">${escapeHtml(p.title)}</div>
+                    <div class="text-xs text-gray-400">${escapeHtml(p.desc)}</div>
+                    <div class="text-xs text-gray-300 mt-1">By: <strong>${p.owner}</strong> — <span class="text-emerald-400">${p.price}</span></div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button class="pill text-sm" onclick="openChatWith('${p.id}')">Chat</button>
+                    ${currentUser && (currentUser.role === 'admin' || currentUser.name === p.owner) ? `<button class="pill text-sm text-red-400" onclick="removeHiring('${p.id}')">Remove</button>` : ''}
+                </div>
+            </div>
+        `;
+        list.appendChild(el);
+    });
+}
 
-        // --- MODAL HANDLERS ---
+function openChatWith(postId){
+    const post = hiringPosts.find(p=>p.id===postId);
+    if(!post) return alert('Post not found');
+    const chatId = 'chat_' + postId;
+    // Open a prompt-based chat (simple, stored locally)
+    const msg = prompt(`Chat with ${post.owner} about "${post.title}". Write your message:`)
+    if (!msg) return;
+    const chatKey = 'chat_' + postId + '_' + (currentUser ? currentUser.name : 'guest');
+    // we'll store messages in messages[] with special type for hiring chats
+    messages.push({ id: 'h_' + Date.now(), user: currentUser ? currentUser.name : 'guest', role: currentUser ? currentUser.role : 'guest', text: `[Hiring chat to ${post.owner}] ${msg}`, ts: Date.now() });
+    saveAll(); renderMessages(); alert('Message posted in forums (use it to negotiate). Payments outside the site.');
+}
 
-        function openModal(modalId, cardId) {
-            const modal = document.getElementById(modalId);
-            const card = document.getElementById(cardId);
-            
-            mainCanvas.classList.add('blurred');
-            
-            modal.classList.remove('opacity-0', 'pointer-events-none');
-            card.classList.remove('scale-90', 'translate-y-4');
-            card.classList.add('scale-100', 'translate-y-0');
-        }
+function removeHiring(id){
+    if (!currentUser) return alert('Not allowed.');
+    const idx = hiringPosts.findIndex(h=>h.id===id);
+    if (idx===-1) return;
+    if (currentUser.role === 'admin' || hiringPosts[idx].owner === currentUser.name) {
+        hiringPosts.splice(idx,1); saveAll(); renderHiring();
+    } else alert('Not permitted.');
+}
 
-        function openVersionsModal() {
-            populateVersionsModal(); // Populate the content before opening
-            openModal('versions-modal', 'versions-card');
-        }
+function createHiringPost(){
+    if (!currentUser) return alert('Login first.');
+    const userRec = getUser(currentUser.name);
+    if (!userRec) return alert('User record missing.');
+    // Enforce role restriction
+    if (!(userRec.role === 'server developer' || userRec.role === 'admin')) return alert('Only server developers or admins can create hiring posts.');
+    // Reset monthly counter if needed
+    const now = Date.now();
+    if (!userRec.lastReset || now - userRec.lastReset > 30*24*3600*1000) {
+        userRec.postsThisMonth = 0; userRec.lastReset = now;
+    }
+    if (userRec.postsThisMonth >= 3) return alert('You reached 3 hiring posts this month.');
+    const title = (document.getElementById('h-title').value || '').trim();
+    const price = (document.getElementById('h-price').value || '').trim();
+    const desc = (document.getElementById('h-desc').value || '').trim();
+    if (!title || !price || !desc) return alert('Fill title, price and description.');
+    const id = 'hp_' + Date.now() + '_' + Math.random().toString(36,8);
+    hiringPosts.push({ id, owner: currentUser.name, title, price, desc, ts: Date.now() });
+    userRec.postsThisMonth = (userRec.postsThisMonth || 0) + 1;
+    saveAll(); renderHiring(); closeAll();
+    alert('Hiring post created. Payments outside the website.');
+}
 
-        function openDetailModal(levelData) {
-            // Update content
-            document.getElementById('m-level').textContent = `${currentLang === 'es' ? 'Nivel' : 'Level'} ${levelData.id + 1}`;
-            document.getElementById('m-title').textContent = levelData.title;
-            document.getElementById('m-ext').textContent = levelData.ext;
-            document.getElementById('m-whatis').textContent = levelData.whatIs;
-            document.getElementById('m-whatdo').textContent = levelData.whatDo;
-            document.getElementById('m-prog-val').textContent = levelData.prog.split('. ')[0];
-            
-            // Update bar style
-            const bar = document.getElementById('m-bar');
-            bar.classList.value = `h-full ${levelData.barColor} rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(99,102,241,0.5)]`;
-            // Set initial width to 0 for animation, then set target width
-            bar.style.width = '0%';
-            setTimeout(() => {
-                bar.style.width = levelData.progress;
-            }, 50);
+/* ----------------------
+   Applications (Apply)
+   ---------------------- */
+function openApplyModal(){ openModal('apply-modal','apply-card'); }
+function submitApplication(){
+    if (!currentUser) return alert('Login first to apply.');
+    const txt = (document.getElementById('apply-msg').value || '').trim();
+    if (!txt) return alert('Write some info about your experience & rates.');
+    applications.push({ id:'app_'+Date.now(), user: currentUser.name, text: txt, ts: Date.now() });
+    saveAll(); closeAll();
+    alert('Application submitted. Admins will review and can assign the role.');
+}
 
-            // Update glow color (simple example, need to grab color from classes)
-            const glow = document.getElementById('modal-glow');
-            glow.classList.remove('bg-indigo-500', 'bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-violet-500', 'bg-fuchsia-500', 'bg-rose-500', 'bg-red-600', 'bg-amber-400');
-            // Simplified logic: use the first color class for the glow
-            const colorClass = levelData.barColor.replace('bg-', 'bg-'); 
-            glow.classList.add(colorClass);
+/* ----------------------
+   Admin actions: manage roles
+   ---------------------- */
+function adminAssignRole(userName, role){
+    if (!currentUser || currentUser.role !== 'admin') return alert('Only admins can assign roles.');
+    const u = getUser(userName);
+    if (!u) return alert('User not found');
+    u.role = role;
+    saveAll();
+    if (currentUser.name === userName) currentUser.role = role;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    refreshUserBadge(); renderMessages(); renderHiring();
+    alert(`Assigned role ${role} to ${userName}`);
+}
 
-            openModal('detail-modal', 'detail-card');
-        }
-        
-        function toggleSettings() {
-            if (document.getElementById('settings-modal').classList.contains('opacity-0')) {
-                openModal('settings-modal', 'settings-card');
-            } else {
-                closeAll();
-            }
-        }
+/* ----------------------
+   Utilities & Startup
+   ---------------------- */
+function escapeHtml(str){ return String(str).replace(/[&<>"'`]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[s])); }
 
-        function closeAll() {
-            mainCanvas.classList.remove('blurred');
-            
-            modals.forEach(m => {
-                const modal = document.getElementById(m.id);
-                const card = document.getElementById(m.cardId);
+document.getElementById('send-btn').addEventListener('click', sendMessage);
+document.getElementById('forum-input').addEventListener('keydown', (e)=> { if (e.key === 'Enter') sendMessage(); });
+document.getElementById('create-hiring-btn').addEventListener('click', ()=>{
+    if (!currentUser) return alert('Login to create a hiring post (server developer or admin).');
+    const rec = getUser(currentUser.name);
+    if (!(rec && (rec.role==='server developer' || rec.role==='admin'))) return alert('Only server developers or admins can create hiring posts.');
+    openModal('create-hiring-modal','create-hiring-card');
+});
 
-                // Hide Modal
-                modal.classList.add('opacity-0', 'pointer-events-none');
-                
-                // Reset card transform
-                card.classList.remove('scale-100', 'translate-y-0');
-                card.classList.add('scale-90', 'translate-y-4');
-            });
-        }
+/* Language change persistence */
+function changeLang(lang){ currentLang = lang; localStorage.setItem('lang', lang); updateHeaderAndLang(); populateCards(); populateChart(); }
 
-        // --- INITIALIZATION ---
-        window.onload = () => {
-            updateUI();
-            
-            // Close modals on escape key
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape') {
-                    closeAll();
-                }
-            });
-        };
-    </script>
+/* Remove message helper */
+window.removeMessage = removeMessage;
+window.openChatWith = openChatWith;
+window.removeHiring = removeHiring;
+window.openApplyModal = openApplyModal;
+window.openLoginModal = openLoginModal;
+window.openVersionsModal = openVersionsModal;
+window.openDetailModal = openDetailModal;
+window.adminAssignRole = adminAssignRole;
+
+/* Initialize UI */
+function init(){
+    updateHeaderAndLang();
+    populateCards();
+    populateChart();
+    refreshUserBadge();
+    renderMessages();
+    renderHiring();
+    lucide.createIcons();
+    // Simple keyboard close
+    document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeAll(); });
+}
+init();
+
+/* Expose some debug helpers (optional) */
+window.createHiringPost = createHiringPost;
+window.submitApplication = submitApplication;
+
+/* ----------------------
+   Seed sample messages for first load
+   ---------------------- */
+if (messages.length === 0) {
+    messages.push({ id:'m_sys_1', user:'nodropedd', role:'admin', text: 'Welcome to Forums Chat! Admin can remove messages and manage roles.', ts: Date.now() });
+    saveAll(); renderMessages();
+}
+
+/* ----------------------
+   Translation of user's instruction (requested)
+   ---------------------- */
+/* The following are translations of the user's last request.
+   English (as you asked) and Spanish translations are provided below.
+   These are just literal translations of the instruction text and are not used anywhere in the UI automatically.
+*/
+
+/* ENGLISH:
+On English it says "Niveles de programar. Wiki por Nodropedd_" — make that it says in English:
+"Levels of programming of Minecraft. Wiki by Nodropedd_".
+Also in Spanish say: "Niveles de programar de Minecraft. Wiki por Nodropedd_".
+
+Add a forums part which isn't automatically translated (obviously). If you scroll down you can see forums chat (also translated to Spanish the "forums chat" subtitle) and you can type a message. You must choose a name and a tiny password or login with a name and password. The user called "nodropedd" will be admin and able to remove messages from forums. Replace the current sign-in button with a guest emoji icon that opens login/register. When logged in you can change language and see your role: "Member" or "admin" or "server developer". Make the admin be able to remove messages and assign/remove roles. Add a button for "Apply for server developer" which will give access to be paid for making servers and not be punished, and add announcements at the Hiring part (to be explained later). Add a special role and note: "fraud at hiring part will be punished". For the hiring part, people can search for a dev to hire; the dev will list prices and capabilities and can chat with them. People can hire a developer by chatting and agreeing a trade; users with "server developer" or "admin" roles can create up to 3 hiring posts per month. Admins can also remove hiring posts. Payments happen outside the website (they pay in chat). Finally translate what I said to Spanish and English.
+*/
+
+/* SPANISH:
+En inglés aparece "Niveles de programar. Wiki por Nodropedd_" — haz que en inglés diga:
+"Levels of programming of Minecraft. Wiki by Nodropedd_".
+Además en español debe decir: "Niveles de programar de Minecraft. Wiki por Nodropedd_".
+
+Añade una sección de foros que no se traduzca automáticamente (obviamente). Si te desplazas hacia abajo verás el chat de foros (también traducido al español el subtítulo "forums chat") y podrás escribir lo que quieras. Tienes que elegir un nombre y una contraseña pequeña o iniciar sesión con un nombre y contraseña. El usuario llamado "nodropedd" será administrador y podrá eliminar mensajes de los foros. Sustituye el botón de inicio de sesión actual por un icono emoji de invitado que abra iniciar sesión/registrarse. Al iniciar sesión podrás cambiar el idioma y ver tu rol: "Member", "admin" o "server developer". Haz que el administrador pueda eliminar mensajes y asignar/quitar roles. Añade un botón para "Apply for Server Developer" que te dará acceso para cobrar por hacer servidores y no ser castigado, y añade anuncios en la sección de contratación que explicarás después. Añade un rol especial y debajo una NOTA: "fraude en la sección de contratación será castigado". En la parte de contratación, la gente puede buscar a un desarrollador para contratar; el desarrollador podrá mostrar precios y qué puede hacer y chatear con él. La gente puede contratar al desarrollador chateando y acordando un trato justo. Usuarios con rol "server developer" o "admin" podrán crear hasta 3 anuncios de contratación por mes. El administrador también podrá eliminar anuncios de contratación. Los pagos serán fuera de la web (se pagará por chat). Finalmente, traduce lo que dije al español e inglés.
+*/
+
+</script>
 </body>
 </html>
