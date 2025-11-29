@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Programación de Servidores</title>
+
+    <!-- Favicon: replace REPLACE_WITH_BASE64 with the actual base64 PNG data of the image you uploaded.
+         Example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...
+         Or host the image as /favicon.png and set href="/favicon.png" -->
+    <link rel="icon" href="data:image/png;base64,REPLACE_WITH_BASE64" type="image/png">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
@@ -30,7 +36,6 @@
         .chat-box { max-height: 320px; overflow-y: auto; }
         .clickable { cursor: pointer; }
         .selected { background: rgba(99,102,241,0.12); }
-        /* hide element helper */
         .hidden-el { display: none !important; }
     </style>
 </head>
@@ -48,17 +53,14 @@
                 <i data-lucide="server" class="w-5 h-5"></i><span id="versions-btn-text">Ver Versiones Core</span>
             </button>
 
-            <!-- DM icon -->
             <button id="dm-btn" onclick="openDMModal()" class="guest-icon hover:scale-105 transition-transform" title="Direct messages">
                 <span class="text-2xl">💬</span>
             </button>
 
-            <!-- Applications (paper) - visible to admins -->
             <button id="apps-btn" onclick="openApplicationsModal()" class="guest-icon hover:scale-105 transition-transform hidden" title="View applications">
                 <span class="text-2xl">📄</span>
             </button>
 
-            <!-- guest / login icon -->
             <button id="guest-btn" onclick="openLoginModal()" class="guest-icon hover:scale-105 transition-transform" title="Login / Register">
                 <span id="guest-emoji" class="text-2xl">👤</span>
             </button>
@@ -137,7 +139,6 @@
     </main>
 </div>
 
-<!-- MODALS -->
 <!-- Versions Modal -->
 <div id="versions-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
@@ -199,7 +200,7 @@
     </div>
 </div>
 
-<!-- Settings Modal (includes change-password when logged in) -->
+<!-- Settings Modal -->
 <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0"></div>
     <div class="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-96 shadow-2xl transform scale-95 smooth-transition" id="settings-card">
@@ -249,7 +250,7 @@
     </div>
 </div>
 
-<!-- Apply Modal (asks for Discord handle) -->
+<!-- Apply Modal -->
 <div id="apply-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="apply-card">
@@ -268,7 +269,7 @@
     </div>
 </div>
 
-<!-- Applications Modal (admins only) -->
+<!-- Applications Modal -->
 <div id="applications-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-3xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="applications-card">
@@ -299,7 +300,7 @@
     </div>
 </div>
 
-<!-- Hiring Chat Modal (Discord-like: left list of posts, right chat) -->
+<!-- Hiring Chat Modal (left list of posts, right chat) -->
 <div id="hiring-chat-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="hiring-chat-card">
@@ -327,7 +328,7 @@
     </div>
 </div>
 
-<!-- DMs Modal (Discord-like: left list of conversations, right messages) -->
+<!-- DMs Modal (left list of conversations, right messages) -->
 <div id="dms-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="dms-card">
@@ -356,9 +357,13 @@
 </div>
 
 <script>
-/* ==========================
-   Storage keys & init data
-   ========================== */
+/* =================================================================
+   Full client-side app (single-file).
+   Data is persisted in localStorage for demo purposes.
+   No default admin account is created.
+   Hiring-chat and DM messages are NOT mirrored into the public forum.
+   ================================================================= */
+
 let currentLang = localStorage.getItem('lang') || 'es';
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 let users = JSON.parse(localStorage.getItem('users') || 'null');
@@ -368,26 +373,13 @@ let hiringChats = JSON.parse(localStorage.getItem('hiringChats') || 'null'); // 
 let applications = JSON.parse(localStorage.getItem('applications') || 'null');
 let dms = JSON.parse(localStorage.getItem('dms') || 'null'); // [{id,participants:[a,b],messages:[{sender,text,ts}]}]
 
-// initialize if missing
+// initialize default storages if missing
 if (!users) { users = []; localStorage.setItem('users', JSON.stringify(users)); }
 if (!messages) { messages = []; localStorage.setItem('messages', JSON.stringify(messages)); }
 if (!hiringPosts) { hiringPosts = []; localStorage.setItem('hiringPosts', JSON.stringify(hiringPosts)); }
 if (!hiringChats) { hiringChats = {}; localStorage.setItem('hiringChats', JSON.stringify(hiringChats)); }
 if (!applications) { applications = []; localStorage.setItem('applications', JSON.stringify(applications)); }
 if (!dms) { dms = []; localStorage.setItem('dms', JSON.stringify(dms)); }
-
-/* ==========================
-   UI helpers
-   ========================== */
-function updateHeaderAndLang(){
-    const subEs = "Niveles de programar de Minecraft. Wiki por Nodropedd_";
-    const subEn = "Levels of programming of Minecraft. Wiki by Nodropedd_";
-    document.getElementById('app-title').textContent = currentLang === 'es' ? "Programación de Servidores" : "Server Programming";
-    document.getElementById('app-subtitle').textContent = currentLang === 'es' ? subEs : subEn;
-    document.getElementById('versions-btn-text').textContent = currentLang === 'es' ? "Ver Versiones Core" : "View Core Versions";
-    document.getElementById('check-es').style.opacity = currentLang === 'es' ? 1 : 0;
-    document.getElementById('check-en').style.opacity = currentLang === 'en' ? 1 : 0;
-}
 
 function saveAll(){
     localStorage.setItem('users', JSON.stringify(users));
@@ -398,20 +390,29 @@ function saveAll(){
     localStorage.setItem('dms', JSON.stringify(dms));
 }
 
+function escapeHtml(str){ return String(str).replace(/[&<>"'`]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[s])); }
 function getUser(name){ return users.find(u => u.name === name); }
+
 function formatRoleDisplay(u){
     if (!u) return 'Member';
     const parts = [];
     if (u.role === 'admin') parts.push('admin');
-    if (u.role === 'server developer') parts.push('server developer');
+    if (u.role === 'server developer' || u.isDeveloper) parts.push('server developer');
     if (u.role === 'member') parts.push('member');
-    // legacy: allow isDeveloper flag
-    if (u.isDeveloper && !parts.includes('server developer')) parts.push('server developer');
-    // ensure uniqueness and order: admin first
     const unique = [...new Set(parts)];
     return unique.join(', ');
 }
 
+/* Header & badge update */
+function updateHeaderAndLang(){
+    const subEs = "Niveles de programar de Minecraft. Wiki por Nodropedd_";
+    const subEn = "Levels of programming of Minecraft. Wiki by Nodropedd_";
+    document.getElementById('app-title').textContent = currentLang === 'es' ? "Programación de Servidores" : "Server Programming";
+    document.getElementById('app-subtitle').textContent = currentLang === 'es' ? subEs : subEn;
+    document.getElementById('versions-btn-text').textContent = currentLang === 'es' ? "Ver Versiones Core" : "View Core Versions";
+    document.getElementById('check-es').style.opacity = currentLang === 'es' ? 1 : 0;
+    document.getElementById('check-en').style.opacity = currentLang === 'en' ? 1 : 0;
+}
 function refreshUserBadge(){
     const badge = document.getElementById('current-user-badge');
     const roleEl = document.getElementById('current-user-role');
@@ -423,13 +424,9 @@ function refreshUserBadge(){
         badge.textContent = currentUser.name;
         roleEl.textContent = formatRoleDisplay(u);
         roleEl.classList.remove('hidden');
-        // show applications button only for admins
         if (u && u.role === 'admin') appsBtn.classList.remove('hidden'); else appsBtn.classList.add('hidden');
-        // show account section in settings
         document.getElementById('account-section').classList.remove('hidden');
-        // hide quick login panel
         quickLoginCard.classList.add('hidden-el');
-        // update apply visibility: everyone can apply, keep button visible
         applyHeader.classList.remove('hidden-el');
     } else {
         badge.textContent = 'Guest';
@@ -441,9 +438,7 @@ function refreshUserBadge(){
     }
 }
 
-/* ==========================
-   Cards & Chart (simplified)
-   ========================== */
+/* Levels / Cards / Chart (same content as before, simplified) */
 const levels = [
   { id:0,title:"Comandos",ext:"/setblock /execute",barColor:"bg-gray-500",progress:"2%",color:"text-gray-400",whatIs:"El nivel más básico.",whatDo:"Ejecutar comandos." , prog:"Nula."},
   { id:1,title:".yml",ext:"YAML Config",barColor:"bg-emerald-500",progress:"10%",color:"text-emerald-400",whatIs:"YAML configs.",whatDo:"Editar plugins.",prog:"Muy Baja."},
@@ -506,9 +501,7 @@ function populateChart(){
     });
 }
 
-/* ==========================
-   Modals (open/close) & Settings toggle
-   ========================== */
+/* Modal management */
 const modalList = [
     { id: 'versions-modal', cardId: 'versions-card' },
     { id: 'detail-modal', cardId: 'detail-card' },
@@ -542,16 +535,10 @@ function closeAll(){
 function toggleSettings(){
     const modal = document.getElementById('settings-modal');
     if (!modal) return;
-    if (modal.classList.contains('opacity-0')) {
-        openModal('settings-modal','settings-card');
-    } else {
-        closeAll();
-    }
+    if (modal.classList.contains('opacity-0')) openModal('settings-modal','settings-card'); else closeAll();
 }
 
-/* ==========================
-   Versions / Detail
-   ========================== */
+/* Versions / Detail */
 function openVersionsModal(){ populateVersionsModal(); openModal('versions-modal','versions-card'); }
 function openDetailModal(level){
     document.getElementById('m-level').textContent = `${currentLang==='es'?'Nivel':'Level'} ${level.id+1}`;
@@ -585,9 +572,7 @@ function populateVersionsModal(){
     });
 }
 
-/* ==========================
-   Auth (register/login/logout/change password)
-   ========================== */
+/* Auth: register / login / logout / change password */
 function openLoginModal(){ openModal('login-modal','login-card'); }
 function registerUser(){
     const name = (document.getElementById('login-name').value || '').trim();
@@ -631,11 +616,7 @@ function changePassword(){
     alert('Password changed.');
 }
 
-/* ==========================
-   Forum messages (public)
-   ========================== */
-function escapeHtml(str){ return String(str).replace(/[&<>"'`]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[s])); }
-
+/* Forum messages (public) */
 function renderMessages(){
     const container = document.getElementById('forum-messages');
     container.innerHTML = '';
@@ -685,9 +666,7 @@ function removeMessage(id){
     } else alert('Not permitted.');
 }
 
-/* ==========================
-   Friend & DM helpers (Discord-like)
-   ========================== */
+/* Friends & DMs (discord-like) */
 function addFriendFromMsg(username){
     if (!currentUser) return alert('Login to add friends.');
     const u = getUser(currentUser.name);
@@ -700,7 +679,6 @@ function addFriendFromMsg(username){
 function openDMModal(){ openModal('dms-modal','dms-card'); renderDMConversations(); }
 function openDMFromUser(username){
     if (!currentUser) return alert('Login to DM.');
-    // auto-create or open conversation, like Discord: select on left and show right
     startDMWith(username);
 }
 function startDM(){
@@ -711,7 +689,6 @@ function startDM(){
 function startDMWith(name){
     if (!currentUser) return alert('Login to DM.');
     if (!getUser(name)) return alert('User not found.');
-    // find or create conversation
     let convo = dms.find(c => c.participants.includes(currentUser.name) && c.participants.includes(name));
     if (!convo) {
         convo = { id: 'dm_' + Date.now() + '_' + Math.random().toString(36,6), participants: [currentUser.name, name], messages: [] };
@@ -724,7 +701,6 @@ function startDMWith(name){
 function renderDMConversations(selectedId){
     const container = document.getElementById('dm-conversations');
     container.innerHTML = '';
-    // list user's conversations (sorted by last message)
     const myConvos = dms.filter(c => c.participants.includes(currentUser ? currentUser.name : ''))
                         .sort((a,b)=> {
                             const la = a.messages.length ? a.messages[a.messages.length-1].ts : 0;
@@ -741,7 +717,6 @@ function renderDMConversations(selectedId){
         el.onclick = ()=> { renderDMWindow(c.id); renderDMConversations(c.id); };
         container.appendChild(el);
     });
-    // friends fallback
     const u = getUser(currentUser ? currentUser.name : '');
     if (u && u.friends && u.friends.length) {
         const friendsHeader = document.createElement('div'); friendsHeader.className='text-xs text-gray-400 mt-2'; friendsHeader.textContent='Friends';
@@ -783,9 +758,7 @@ function sendDM(){
     renderDMConversations(activeDMId);
 }
 
-/* ==========================
-   Hiring posts & per-post chats (Discord-like)
-   ========================== */
+/* Hiring posts & per-post chats (Discord-like) */
 function renderHiring(){
     const list = document.getElementById('hiring-list');
     list.innerHTML = '';
@@ -849,6 +822,7 @@ function renderHiringChat(postId){
     });
     box.scrollTop = box.scrollHeight;
 }
+/* IMPORTANT: sendHiringChat no longer mirrors messages to public forum. */
 function sendHiringChat(){
     if (!currentUser) return alert('Login to chat.');
     if (!currentHiringChat) return alert('No chat open.');
@@ -857,12 +831,9 @@ function sendHiringChat(){
     hiringChats[currentHiringChat] = hiringChats[currentHiringChat] || [];
     hiringChats[currentHiringChat].push({ sender: currentUser.name, text: txt, ts: Date.now() });
     saveAll(); renderHiringChat(currentHiringChat); document.getElementById('hchat-input').value = '';
-    // also mirror to public messages as a short record (optional)
-    messages.push({ id: 'hmsg_' + Date.now(), user: currentUser.name, role: getUser(currentUser.name)?.role || 'member', text: `[Hiring:${currentHiringChat}] ${txt}`, ts: Date.now() });
-    saveAll(); renderMessages();
 }
 
-/* Create, remove hiring posts */
+/* Create / remove hiring posts */
 function createHiringPost(){
     if (!currentUser) return alert('Login first.');
     const u = getUser(currentUser.name);
@@ -891,9 +862,7 @@ function removeHiring(id){
     } else alert('Not permitted.');
 }
 
-/* ==========================
-   Applications (admin review)
-   ========================== */
+/* Applications (admin review) */
 function openApplyModal(){ openModal('apply-modal','apply-card'); }
 function submitApplication(){
     if (!currentUser) return alert('Login first to apply.');
@@ -934,14 +903,13 @@ function acceptApplication(appId){
     const a = applications[idx];
     const u = getUser(a.user);
     if (!u) return alert('Applicant user not found.');
-    // IMPORTANT: if the user is admin, keep admin role and set isDeveloper flag
+    // preserve admin role if user is admin; otherwise set server developer role
     if (u.role === 'admin') {
         u.isDeveloper = true;
     } else {
         u.role = 'server developer';
         u.isDeveloper = true;
     }
-    // remove application
     applications.splice(idx,1); saveAll();
     openApplicationsModal(); renderHiring();
     alert(a.user + ' has been granted server developer access (role preserved if admin).');
@@ -954,16 +922,13 @@ function rejectApplication(appId){
     alert('Rejected application of ' + a.user);
 }
 
-/* ==========================
-   Admin role assignment helper (fallback)
-   ========================== */
+/* Admin role helper */
 function adminAssignRole(userName, role){
     if (!currentUser) return alert('Only admins can assign roles.');
     const ucur = getUser(currentUser.name);
     if (!ucur || ucur.role !== 'admin') return alert('Only admins can assign roles.');
     const u = getUser(userName);
     if (!u) return alert('User not found');
-    // If assigning 'server developer' to an admin, keep admin and set flag
     if (role === 'server developer' && u.role === 'admin') {
         u.isDeveloper = true;
     } else {
@@ -977,9 +942,7 @@ function adminAssignRole(userName, role){
     alert(`Assigned role ${role} to ${userName}`);
 }
 
-/* ==========================
-   Startup & event wiring
-   ========================== */
+/* Wiring events and init */
 document.getElementById('send-btn').addEventListener('click', sendMessage);
 document.getElementById('forum-input').addEventListener('keydown', (e)=> { if (e.key === 'Enter') sendMessage(); });
 document.getElementById('create-hiring-btn').addEventListener('click', ()=>{
@@ -989,10 +952,9 @@ document.getElementById('create-hiring-btn').addEventListener('click', ()=>{
     openModal('create-hiring-modal','create-hiring-card');
 });
 
-// language change
 function changeLang(lang){ currentLang = lang; localStorage.setItem('lang', lang); updateHeaderAndLang(); populateCards(); populateChart(); }
 
-// expose functions to window for inline handlers
+/* Expose some functions for inline handlers */
 window.openLoginModal = openLoginModal;
 window.openApplyModal = openApplyModal;
 window.openVersionsModal = openVersionsModal;
@@ -1003,7 +965,7 @@ window.adminAssignRole = adminAssignRole;
 window.openDMFromUser = openDMFromUser;
 window.addFriendFromMsg = addFriendFromMsg;
 
-/* initial render */
+/* Init */
 function init(){
     updateHeaderAndLang();
     populateCards();
@@ -1012,13 +974,11 @@ function init(){
     renderMessages();
     renderHiring();
     lucide.createIcons();
-    // seed a neutral system message if empty
     if (messages.length === 0) {
         messages.push({ id:'m_sys_1', user:'System', role:'system', text: 'Welcome to Forums Chat! Create an account to post, DM others and apply for Server Developer.', ts: Date.now() });
         saveAll();
         renderMessages();
     }
-    // keyboard close
     document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeAll(); });
 }
 init();
