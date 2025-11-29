@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Programación de Servidores</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
+    <!-- Google Fonts (Inter used for Tailwind default, but keeping Plus Jakarta Sans) -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
+    
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
-
+        
         /* Smooth transitions */
         .smooth-transition {
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
@@ -38,12 +39,13 @@
         /* Custom Scrollbar for Modals */
         .custom-scrollbar::-webkit-scrollbar { width: 8px; }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background-color: rgba(99, 102, 241, 0.5);
+            background-color: rgba(99, 102, 241, 0.5); /* indigo-500/50 */
             border-radius: 4px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background-color: rgba(255, 255, 255, 0.05);
+            background-color: rgba(255, 255, 255, 0.05); /* white/5 */
         }
+
 
         /* Blur Classes for Background */
         .blurred {
@@ -57,16 +59,13 @@
             width: 0;
             transition: width 1.5s cubic-bezier(0.22, 1, 0.36, 1);
         }
-
-        /* Small helper to visually hide temporary elements used for color computation */
-        .visually-hidden { position: absolute !important; width: 1px; height: 1px; margin: -1px; border: 0; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
     </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden animated-bg selection:bg-indigo-500 selection:text-white">
 
     <!-- CONTENEDOR PRINCIPAL (Lo que se desenfoca) -->
     <div id="main-canvas" class="h-full w-full flex flex-col smooth-transition origin-center">
-
+        
         <!-- Header -->
         <header class="flex flex-col md:flex-row justify-between items-center px-8 py-6 z-10 gap-4">
             <div class="text-center md:text-left">
@@ -75,16 +74,16 @@
                 </h1>
                 <p id="app-subtitle" class="text-gray-300 text-sm font-medium mt-1 tracking-wide">Niveles de dificultad de programar servidores</p>
             </div>
-
+            
             <div class="flex gap-3">
                 <!-- Botón Versiones Core -->
-                <button type="button" onclick="openVersionsModal()" class="group relative p-3 px-5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/30 transition-all duration-300 shadow-lg backdrop-blur-md flex items-center gap-2 text-sm font-medium text-indigo-300 hover:text-white">
+                <button onclick="openVersionsModal()" class="group relative p-3 px-5 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/30 transition-all duration-300 shadow-lg backdrop-blur-md flex items-center gap-2 text-sm font-medium text-indigo-300 hover:text-white">
                     <i data-lucide="server" class="w-5 h-5"></i>
                     <span id="versions-btn-text">Ver Versiones Core</span>
                 </button>
 
                 <!-- Botón Ajustes -->
-                <button type="button" onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
+                <button onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
                     <i data-lucide="settings" class="w-6 h-6 text-gray-300 group-hover:text-white"></i>
                 </button>
             </div>
@@ -112,18 +111,18 @@
     <!-- CAPA DE MODALES (Overlay) -->
 
     <!-- Modal de Versiones Core -->
-    <div id="versions-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition" role="dialog" aria-modal="true" aria-hidden="true">
+    <div id="versions-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
         <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
-
-        <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition relative overflow-hidden group" id="versions-card" role="document" tabindex="-1">
-
+        
+        <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition relative overflow-hidden group" id="versions-card">
+            
             <div class="relative z-10 flex flex-col h-full max-h-[90vh]">
                 <div class="flex justify-between items-start mb-6 flex-shrink-0">
                     <div>
                         <h2 id="v-title" class="text-3xl font-bold text-white">Versiones y Forks de Servidor</h2>
                         <p class="text-gray-400 font-medium text-sm mt-1">APIs y Motores principales de la comunidad.</p>
                     </div>
-                    <button type="button" onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20 transition-colors">
+                    <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20 transition-colors">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -148,13 +147,15 @@
         </div>
     </div>
 
-    <!-- Modal de Detalles -->
-    <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition" role="dialog" aria-modal="true" aria-hidden="true">
-        <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
 
-        <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-2xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition relative overflow-hidden group" id="detail-card" role="document" tabindex="-1">
+    <!-- Modal de Detalles -->
+    <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+        <!-- Backdrop clickable para cerrar -->
+        <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+        
+        <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-8 max-w-2xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition relative overflow-hidden group" id="detail-card">
             <!-- Glow effect behind -->
-            <div id="modal-glow" class="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[100px] opacity-20 pointer-events-none transition-colors duration-500"></div>
+            <div id="modal-glow" class="absolute -top-20 -right-20 w-64 h-64 bg-indigo-500 rounded-full blur-[100px] opacity-20 pointer-events-none transition-colors duration-500"></div>
 
             <div class="relative z-10 flex flex-col h-full max-h-[80vh]">
                 <div class="flex justify-between items-start mb-6 flex-shrink-0">
@@ -163,7 +164,7 @@
                         <h2 id="m-title" class="text-3xl font-bold text-white">.yml</h2>
                         <p id="m-ext" class="text-gray-400 font-mono text-sm mt-1">YAML Configuration</p>
                     </div>
-                    <button type="button" onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20 transition-colors">
+                    <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20 transition-colors">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
@@ -194,18 +195,18 @@
     </div>
 
     <!-- Modal de Ajustes (Settings) -->
-    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition" role="dialog" aria-modal="true" aria-hidden="true">
+    <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
         <div onclick="closeAll()" class="absolute inset-0"></div>
-
-        <div class="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-80 shadow-2xl transform scale-95 smooth-transition" id="settings-card" role="document" tabindex="-1">
+        
+        <div class="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-80 shadow-2xl transform scale-95 smooth-transition" id="settings-card">
             <h3 id="st-title" class="text-xl font-bold mb-4 text-center">Ajustes / Settings</h3>
-
+            
             <div class="space-y-3">
-                <button type="button" onclick="changeLang('es')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 hover:border-indigo-500/50 transition-all group">
+                <button onclick="changeLang('es')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 hover:border-indigo-500/50 transition-all group">
                     <span class="font-medium">Español</span>
                     <span id="check-es" class="opacity-100 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
                 </button>
-                <button type="button" onclick="changeLang('en')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 hover:border-indigo-500/50 transition-all group">
+                <button onclick="changeLang('en')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 hover:border-indigo-500/50 transition-all group">
                     <span class="font-medium">English</span>
                     <span id="check-en" class="opacity-0 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
                 </button>
@@ -225,9 +226,71 @@
                 lblWhatIs: "EXPLICACIÓN DETALLADA",
                 lblWhatDo: "TAREAS Y RESPONSABILIDADES",
                 lblProg: "COMPLEJIDAD TÉCNICA",
-                /* levels and serverVersions trimmed in this snippet for brevity in this view, keep your original arrays here */
-                levels: [ /* ... keep your original levels array here ... */ ],
-                serverVersions: [ /* ... keep your original serverVersions array here ... */ ]
+                levels: [
+                    { id: 0, title: "Comandos", ext: "/setblock /execute", color: "text-gray-400", barColor: "bg-gray-500", progress: "2%", 
+                      whatIs: "El nivel más básico de interacción técnica. Se refiere al uso de comandos nativos de Minecraft (Vanilla) o comandos administrativos proporcionados por plugins ya instalados. No implica editar archivos externos, sino interactuar directamente con el chat o la consola del servidor.", 
+                      whatDo: "Ejecutar lógica simple in-game como '/setblock' para poner bloques, '/summon' para entidades, creación de regiones con WorldGuard ('/rg create'), configuración de cajas de botín ('/excellent crates') o gestión de permisos básicos. Se basa puramente en la memorización de sintaxis.", 
+                      prog: "Nula. Solo memorización." },
+                    { id: 1, title: ".yml", ext: "YAML Config", color: "text-emerald-400", barColor: "bg-emerald-500", progress: "10%", 
+                      whatIs: "YAML (YAML Ain't Markup Language) es el estándar universal para la configuración de plugins en el ecosistema Bukkit/Spigot. Son archivos de texto legibles diseñados para que los administradores ajusten el comportamiento de los plugins sin tocar el código fuente.", 
+                      whatDo: "Modificación de mensajes de bienvenida, traducción de textos (messages.yml), ajuste de parámetros numéricos (daño, cooldowns, precios), activación de 'features' (true/false) y definición de permisos. Es la base de cualquier servidor configurado.", 
+                      prog: "Muy Baja. Sintaxis de indentación." },
+                    { id: 2, title: ".json", ext: "JSON Data", color: "text-teal-400", barColor: "bg-teal-500", progress: "20%", 
+                      whatIs: "JSON es un formato de texto estricto utilizado nativamente por Mojang. Es esencial para Datapacks, Loot Tables (tablas de botín), Advancements (logros) y configuración de texturas. A diferencia de YAML, un error de coma o llave rompe todo el archivo.", 
+                      whatDo: "Diseñar tablas de drop personalizadas para mobs, crear recetas de crafteo custom, modificar el comportamiento de aldeanos y crear sistemas mediante Datapacks que alteran la mecánica vanilla del juego sin mods.", 
+                      prog: "Básica. Estructuras y validación." },
+                    { id: 3, title: ".toml", ext: "TOML / INI", color: "text-cyan-400", barColor: "bg-cyan-500", progress: "30%", 
+                      whatIs: "Formatos de configuración más modernos y estrictos que YAML. Se encuentran principalmente en proxies de red como Velocity, en el archivo server.properties o en mods de la comunidad técnica. TOML es valorado por su precisión.", 
+                      whatDo: "Configuración de redes BungeeCord/Velocity (forwarding, puertos), optimización de rendimiento del servidor (Aikar flags, purpur.yml) y ajuste fino de mods técnicos. Requiere entender cómo los servidores se comunican entre sí.", 
+                      prog: "Baja/Media. Configuración técnica." },
+                    { id: 4, title: ".db", ext: "SQL Database", color: "text-sky-400", barColor: "bg-sky-500", progress: "40%", 
+                      whatIs: "Gestión de bases de datos relacionales (MySQL, MariaDB, SQLite). Aquí es donde se guardan los datos persistentes críticos: dinero de los jugadores, clanes, logs de bloques, inventarios sincronizados, etc.", 
+                      whatDo: "Realizar consultas directas (Queries) para arreglar datos corruptos, migrar datos de un servidor a otro, fusionar bases de datos de distintos modos de juego y optimizar tiempos de respuesta. Es vital para redes grandes.", 
+                      prog: "Intermedia. Consultas SQL." },
+                    { id: 5, title: "Logic", ext: "ConditionalEvents", color: "text-blue-400", barColor: "bg-blue-500", progress: "50%", 
+                      whatIs: "Uso de plugins que interpretan lógica condicional compleja (ConditionalEvents, MyCommand, BetonQuest). Es el puente entre configurar y programar: no compilas código, pero escribes algoritmos.", 
+                      whatDo: "Crear mecánicas tipo 'Si el jugador mata a X mob con Y espada, entonces hay un 5% de probabilidad de ejecutar Z comando'. Permite crear minijuegos simples o sistemas de rol sin saber Java.", 
+                      prog: "Lógica. Condicionales y Variables." },
+                    { id: 6, title: ".sk", ext: "Skript Lang", color: "text-indigo-400", barColor: "bg-indigo-500", progress: "60%", 
+                      whatIs: "Skript es un lenguaje de programación interpretado diseñado para Minecraft que utiliza frases en inglés natural en lugar de código complejo. Es extremadamente potente para prototipado rápido.", 
+                      whatDo: "Programar sistemas completos de clanes, minijuegos personalizados (UHC, SkyWars), GUIs interactivas y habilidades especiales escribiendo frases como 'on damage: if victim is player...'.", 
+                      prog: "Alta (Scripting). Control de flujo." },
+                    { id: 7, title: ".js", ext: "JavaScript API", color: "text-violet-400", barColor: "bg-violet-500", progress: "70%", 
+                      whatIs: "Implementación de JavaScript dentro del entorno del servidor mediante motores como Denizen o ScriptCraft. Permite usar uno de los lenguajes más populares del mundo para interactuar con la API de Minecraft.", 
+                      whatDo: "Crear scripts que conectan el juego con páginas web en tiempo real (WebSockets), NPCs con inteligencia artificial básica, o sistemas dinámicos que requieren cálculos matemáticos complejos.", 
+                      prog: "Programación Web aplicada." },
+                    { id: 8, title: ".lua", ext: "Lua Scripting", color: "text-fuchsia-400", barColor: "bg-fuchsia-500", progress: "80%", 
+                      whatIs: "Lua es un lenguaje de script ligero, embebido en mods técnicos como ComputerCraft u OpenComputers. Se usa para la automatización dentro del mundo del juego.", 
+                      whatDo: "Programar 'Tortugas' (robots) para que minen automáticamente con algoritmos eficientes, crear sistemas de seguridad con pantallas táctiles in-game, o gestionar reactores nucleares de mods.", 
+                      prog: "Estructurada. Algoritmos." },
+                    { id: 9, title: "Java", ext: "Spigot / Paper API", color: "text-rose-400", barColor: "bg-rose-500", progress: "90%", 
+                      whatIs: "El desarrollo nativo de Plugins. Implica escribir código Java real, compilarlo y empaquetarlo en .jar. Usas la API de Spigot/Paper para manipular casi cualquier aspecto del servidor.", 
+                      whatDo: "Crear plugins profesionales desde cero, optimizar el rendimiento del servidor (profiling), manipular paquetes de red (ProtocolLib) y crear sistemas escalables y mantenibles.", 
+                      prog: "Avanzado. POO y Arquitectura." },
+                    { id: 10, title: "Modding", ext: "Forge / Fabric", color: "text-red-500", barColor: "bg-red-600", progress: "100%", 
+                      whatIs: "Modding implica alterar el cliente y el servidor, inyectando código en el juego base mediante Mixins. No estás limitado por lo que el servidor permite; cambias el juego. Es el primer nivel donde se modifica el código base del juego.", 
+                      whatDo: "Añadir nuevos bloques, dimensiones, mobs con modelos 3D complejos, alterar las físicas de movimiento, o reescribir el motor de renderizado. Requiere conocimientos profundos de la JVM.", 
+                      prog: "Experto. Ingeniería Inversa." },
+                    { id: 11, title: "Forks / Motor", ext: "Reescribir el Core", color: "text-amber-300", barColor: "bg-amber-400", progress: "110%", 
+                      whatIs: "Máxima dificultad. Consiste en tomar el código fuente de un motor de servidor existente (como Paper, Purpur o incluso el código base de Minecraft) y modificarlo directamente para crear un nuevo 'fork' o motor de servidor completamente personalizado.", 
+                      whatDo: "Implementar optimizaciones de rendimiento a nivel de tick, alterar la forma en que se manejan los chunks y la luz, añadir nuevas API y eventos que los plugins estándar no ofrecen, o aplicar parches de seguridad antes de que el código base lo haga. Ejemplos incluyen crear tu propia versión optimizada del motor Paper o desarrollar un nuevo proxy de red.", 
+                      prog: "Maestro. Arquitectura de Sistemas y Código Base." }
+                ],
+                serverVersions: [
+                    { name: "Bukkit", type: "API", year: 2010, updated: "No (Legado)", purpose: "API original para plugins. Sentó las bases para todos los motores de servidor posteriores.", curiosity: "Su desarrollo cesó en 2014 debido a una disputa legal por derechos de autor (DMCA)." },
+                    { name: "Spigot", type: "Core", year: 2012, updated: "Sí", purpose: "Fork de Bukkit optimizado. Mejora el rendimiento y el manejo de paquetes respecto a Bukkit.", curiosity: "El estándar de oro para servidores de Plugins por muchos años. Introduce las herramientas 'timings'." },
+                    { name: "Paper", type: "Core", year: 2016, updated: "Sí", purpose: "Fork de Spigot centrado en el rendimiento y la estabilidad. Corrige bugs de Vanilla y añade optimizaciones.", curiosity: "El motor más usado hoy en día para servidores de Plugins de alto rendimiento. Es la base de muchos otros forks." },
+                    { name: "Purpur", type: "Core", year: 2020, updated: "Sí", purpose: "Fork de Paper con mayor personalización de Vanilla y optimizaciones adicionales. Ideal para servidores grandes con requisitos específicos de juego.", curiosity: "Incluye cientos de opciones de configuración que permiten afinar el comportamiento del juego, como cambios en el PvP y la detección de exploits." },
+                    { name: "Pufferfish", type: "Core", year: 2021, updated: "Sí", purpose: "Fork de Paper. Ofrece optimizaciones aún más agresivas para servidores con gran cantidad de entidades o jugadores.", curiosity: "Se enfoca en reducir el uso de CPU y memoria sin comprometer demasiado la jugabilidad Vanilla." },
+                    { name: "BungeeCord", type: "Proxy", year: 2012, updated: "Sí", purpose: "El proxy original, utilizado para redes de servidores. Estable, pero generalmente menos eficiente que Velocity.", curiosity: "Fue desarrollado por SpigotMC y se convirtió en el estándar de facto para las redes de servidores durante casi una década." },
+                    { name: "Velocity", type: "Proxy", year: 2018, updated: "Sí", purpose: "Proxy moderno, ligero y eficiente. Utilizado para conectar múltiples servidores de Minecraft en una sola red.", curiosity: "Escrito desde cero para ser multihilo y es el reemplazo recomendado para BungeeCord." },
+                    { name: "Forge", type: "Modding", year: 2011, updated: "Sí", purpose: "Plataforma de modding para Java Edition. Permite a los mods modificar el cliente y el servidor a fondo.", curiosity: "El sistema de mods original, popularizado por packs como Tekkit y Feed The Beast (FTB). Dominó durante años." },
+                    { name: "Fabric", type: "Modding", year: 2018, updated: "Sí", purpose: "Plataforma de modding ligera y modular. Se actualiza rápidamente a las versiones de Minecraft.", curiosity: "Popular entre desarrolladores por su API minimalista y su velocidad de actualización, ideal para mods pequeños de calidad de vida." },
+                    { name: "Quilt", type: "Modding", year: 2022, updated: "Sí", purpose: "Fork de Fabric, enfocado en mayor estabilidad y estándares abiertos para el desarrollo de mods.", curiosity: "Busca mejorar la comunidad y la gobernanza del proyecto Fabric." },
+                    { name: "Sponge", type: "API", year: 2014, updated: "Sí", purpose: "API para crear 'Plugins' (que ellos llaman 'Mods') que funcionan tanto en Forge como en Vanilla, ofreciendo una alternativa a Bukkit.", curiosity: "Fue creado como respuesta a la caída de Bukkit, buscando ser una API más moderna e independiente del servidor base." },
+                    { name: "Magma", type: "Híbrido", year: 2019, updated: "Sí", purpose: "Motor que permite correr Plugins de Spigot junto con Mods de Forge en el mismo servidor.", curiosity: "Busca la compatibilidad total, aunque a menudo puede tener problemas de estabilidad debido a la complejidad de la integración." },
+                    { name: "PocketMine-MP", type: "Bedrock", year: 2013, updated: "Sí", purpose: "Implementación del servidor para Minecraft Bedrock (Pocket Edition) escrita en PHP.", curiosity: "Es uno de los pocos proyectos importantes escritos en PHP en lugar de Java/Kotlin, orientado a dispositivos móviles." }
+                ]
             },
             en: {
                 appTitle: "Server Programming",
@@ -238,8 +301,71 @@
                 lblWhatIs: "DETAILED EXPLANATION",
                 lblWhatDo: "TASKS AND RESPONSIBILITIES",
                 lblProg: "TECHNICAL COMPLEXITY",
-                levels: [ /* ... keep your original levels array here ... */ ],
-                serverVersions: [ /* ... keep your original serverVersions array here ... */ ]
+                levels: [
+                    { id: 0, title: "Commands", ext: "/setblock /execute", color: "text-gray-400", barColor: "bg-gray-500", progress: "2%", 
+                      whatIs: "The most basic level of technical interaction. Refers to using native Minecraft commands (Vanilla) or administrative commands from installed plugins. Does not involve editing external files.", 
+                      whatDo: "Execute simple in-game logic like '/setblock', '/summon', region creation with WorldGuard, or loot crate setup. Based purely on syntax memorization.", 
+                      prog: "None. Memorization." },
+                    { id: 1, title: ".yml", ext: "YAML Config", color: "text-emerald-400", barColor: "bg-emerald-500", progress: "10%", 
+                      whatIs: "YAML is the standard for plugin configuration. Readable text files designed for admins to tweak plugin behavior without touching source code.", 
+                      whatDo: "Modify welcome messages, translate text, adjust numeric parameters (damage, cooldowns), toggle features, and define permissions. The foundation of any server.", 
+                      prog: "Very Low. Syntax only." },
+                    { id: 2, title: ".json", ext: "JSON Data", color: "text-teal-400", barColor: "bg-teal-500", progress: "20%", 
+                      whatIs: "Strict text format used natively by Mojang. Essential for Datapacks, Loot Tables, Advancements, and texture configs. A single syntax error breaks the file.", 
+                      whatDo: "Design custom drop tables, create custom crafting recipes, modify villager behavior, and build Datapack systems that alter vanilla mechanics.", 
+                      prog: "Basic. Data structures." },
+                    { id: 3, title: ".toml", ext: "TOML / INI", color: "text-cyan-400", barColor: "bg-cyan-500", progress: "30%", 
+                      whatIs: "Modern, strict config formats found in proxies (Velocity) and technical mods. Valued for precision and mostly used for network settings.", 
+                      whatDo: "Configure BungeeCord/Velocity networks, optimize server performance (Aikar flags), and fine-tune technical mods.", 
+                      prog: "Low. Technical config." },
+                    { id: 4, title: ".db", ext: "SQL Database", color: "text-sky-400", barColor: "bg-sky-500", progress: "40%", 
+                      whatIs: "Relational database management (MySQL, SQLite). Stores critical persistent data like player money, clans, and logs.", 
+                      whatDo: "Run direct queries to fix corrupt data, migrate data between servers, merge databases, and optimize response times.", 
+                      prog: "Intermediate. SQL Logic." },
+                    { id: 5, title: "Logic", ext: "ConditionalEvents", color: "text-blue-400", barColor: "bg-blue-500", progress: "50%", 
+                      whatIs: "Using plugins that interpret complex conditional logic. The bridge between configuring and programming.", 
+                      whatDo: "Create mechanics like 'If player kills mob X with sword Y, 5% chance to run command Z'. Allows creating minigames without Java.", 
+                      prog: "Logic. Loops and conditions." },
+                    { id: 6, title: ".sk", ext: "Skript Lang", color: "text-indigo-400", barColor: "bg-indigo-500", progress: "60%", 
+                      whatIs: "Interpreted language using natural English sentences. Extremely powerful for rapid prototyping.", 
+                      whatDo: "Program full clan systems, custom minigames, interactive GUIs, and special abilities using simple English syntax.", 
+                      prog: "High Scripting." },
+                    { id: 7, title: ".js", ext: "JavaScript API", color: "text-violet-400", barColor: "bg-violet-500", progress: "70%", 
+                      whatIs: "JavaScript implementation inside Minecraft (Denizen/ScriptCraft). Connects the game with web technologies.", 
+                      whatDo: "Create scripts connecting game to websockets, AI NPCs, or dynamic systems requiring complex math.", 
+                      prog: "Web Programming applied." },
+                    { id: 8, title: ".lua", ext: "Lua Scripting", color: "text-fuchsia-400", barColor: "bg-fuchsia-500", progress: "80%", 
+                      whatIs: "Lightweight scripting embedded in technical mods (ComputerCraft). Used for in-game automation.", 
+                      whatDo: "Program 'Turtles' to mine automatically, create security systems, or manage nuclear reactors.", 
+                      prog: "Structured. Algorithms." },
+                    { id: 9, title: "Java", ext: "Spigot / Paper API", color: "text-rose-400", barColor: "bg-rose-500", progress: "90%", 
+                      whatIs: "Native Plugin Development. Writing real Java code, compiling, and packaging into .jar files.", 
+                      whatDo: "Create professional plugins from scratch, optimize server core, manipulate network packets, and build scalable systems.", 
+                      prog: "Advanced. Full OOP." },
+                    { id: 10, title: "Modding", ext: "Forge / Fabric", color: "text-red-500", barColor: "bg-red-600", progress: "100%", 
+                      whatIs: "Modding involves altering client and server code via Mixins. You are not limited by server permissions; you change the game. This is the first level where the game's core code is modified.", 
+                      whatDo: "Add new blocks, dimensions, 3D mobs, alter physics, or rewrite the rendering engine. Requires deep JVM knowledge.", 
+                      prog: "Expert. Reverse engineering." },
+                    { id: 11, title: "Forks / Engine", ext: "Rewrite the Core", color: "text-amber-300", barColor: "bg-amber-400", progress: "110%", 
+                      whatIs: "Maximum difficulty. Consists of taking the source code of an existing server engine (like Paper, Purpur, or even the base Minecraft code) and directly modifying it to create a new, completely customized 'fork' or server engine. Requires a deep understanding of network architecture, concurrency, and Minecraft's internal logic.", 
+                      whatDo: "Implement performance optimizations at the tick level, alter how chunks and light are handled, add new APIs and events not offered by standard plugins, or apply security patches before the base code does. Examples include creating your own optimized version of the Paper engine or developing a new network proxy.", 
+                      prog: "Master. Systems Architecture and Base Code." }
+                ],
+                serverVersions: [
+                    { name: "Bukkit", type: "API", year: 2010, updated: "No (Legacy)", purpose: "Original API for plugins. Set the foundation for all subsequent server engines.", curiosity: "Development ceased in 2014 due to a legal dispute over copyright (DMCA takedown)." },
+                    { name: "Spigot", type: "Core", year: 2012, updated: "Yes", purpose: "Optimized Bukkit fork. Improves performance and packet handling over Bukkit.", curiosity: "The golden standard for Plugin servers for many years. Introduced 'timings' tools." },
+                    { name: "Paper", type: "Core", year: 2016, updated: "Yes", purpose: "Spigot fork focused on performance and stability. Fixes Vanilla bugs and adds optimizations.", curiosity: "The most widely used engine today for high-performance Plugin servers. It is the base for many other forks." },
+                    { name: "Purpur", type: "Core", year: 2020, updated: "Yes", purpose: "Paper fork with greater Vanilla customization and additional optimizations. Ideal for large servers with specific game requirements.", curiosity: "Includes hundreds of configuration options that allow fine-tuning game behavior, such as PvP changes and exploit detection." },
+                    { name: "Pufferfish", type: "Core", year: 2021, updated: "Yes", purpose: "Paper fork. Offers even more aggressive optimizations for servers with a large number of entities or players.", curiosity: "Focuses on reducing CPU and memory usage without compromising too much Vanilla gameplay." },
+                    { name: "BungeeCord", type: "Proxy", year: 2012, updated: "Yes", purpose: "The original proxy, used for server networks. Stable, but generally less efficient than Velocity.", curiosity: "It was developed by SpigotMC and became the de facto standard for server networks for almost a decade." },
+                    { name: "Velocity", type: "Proxy", year: 2018, updated: "Yes", purpose: "Modern, lightweight, and efficient proxy. Used to connect multiple Minecraft servers into a single network.", curiosity: "Written from scratch to be multi-threaded and is the recommended replacement for BungeeCord." },
+                    { name: "Forge", type: "Modding", year: 2011, updated: "Yes", purpose: "Modding platform for Java Edition. Allows mods to thoroughly modify both the client and the server.", curiosity: "The original mod system, popularized by packs like Tekkit and Feed The Beast (FTB). Dominated for years." },
+                    { name: "Fabric", type: "Modding", year: 2018, updated: "Yes", purpose: "Lightweight, modular modding platform. Updates quickly to new Minecraft versions.", curiosity: "Popular among developers for its minimalist API and update speed, ideal for small quality-of-life mods." },
+                    { name: "Quilt", type: "Modding", year: 2022, updated: "Yes", purpose: "Fabric fork, focused on greater stability and open standards for mod development.", curiosity: "Seeks to improve the governance and community of the Fabric project." },
+                    { name: "Sponge", type: "API", year: 2014, updated: "Yes", purpose: "API for creating 'Plugins' (which they call 'Mods') that work on both Forge and Vanilla, offering an alternative to Bukkit.", curiosity: "It was created in response to the fall of Bukkit, aiming to be a more modern and server-independent API." },
+                    { name: "Magma", type: "Hybrid", year: 2019, updated: "Yes", purpose: "Engine that allows running Spigot Plugins along with Forge Mods on the same server.", curiosity: "Aims for total compatibility, though it can often have stability issues due to the complexity of the integration." },
+                    { name: "PocketMine-MP", type: "Bedrock", year: 2013, updated: "Yes", purpose: "Server implementation for Minecraft Bedrock (Pocket Edition) written in PHP.", curiosity: "It is one of the few major projects written in PHP instead of Java/Kotlin, oriented towards mobile devices." }
+                ]
             }
         };
 
@@ -247,23 +373,12 @@
         let currentLang = localStorage.getItem('lang') || 'es';
         let currentContent;
         const mainCanvas = document.getElementById('main-canvas');
-
+        
         const modals = [
             { id: 'versions-modal', cardId: 'versions-card' },
             { id: 'detail-modal', cardId: 'detail-card' },
             { id: 'settings-modal', cardId: 'settings-card' }
         ];
-
-        // Helper to compute applied background color for a Tailwind class at runtime
-        function getColorFromTailwindClass(twClass) {
-            // Create a temporary element, apply the Tailwind class, read computed background-color
-            const tmp = document.createElement('span');
-            tmp.className = `${twClass} visually-hidden`;
-            document.body.appendChild(tmp);
-            const style = getComputedStyle(tmp).backgroundColor;
-            document.body.removeChild(tmp);
-            return style || '';
-        }
 
         // --- CORE FUNCTIONS ---
 
@@ -276,7 +391,7 @@
             document.getElementById('versions-btn-text').textContent = currentContent.versionsBtn;
             document.getElementById('v-title').textContent = currentContent.versionsTitle;
             document.getElementById('st-title').textContent = currentContent.settingsTitle;
-
+            
             // Update labels in the detail modal (even when closed)
             document.getElementById('lbl-whatis').textContent = currentContent.lblWhatIs;
             document.getElementById('lbl-whatdo').textContent = currentContent.lblWhatDo;
@@ -290,9 +405,7 @@
             populateChart();
 
             // Re-render icons
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                lucide.createIcons();
-            }
+            lucide.createIcons();
         }
 
         function changeLang(lang) {
@@ -308,7 +421,9 @@
 
             currentContent.levels.forEach(level => {
                 const card = document.createElement('div');
-                card.className = 'p-6 rounded-2xl bg-gray-800/50 backdrop-blur-md border border-white/5 shadow-xl cursor-pointer hover:bg-gray-700/60 smooth-transition flex flex-col justify-between space-y-4';
+                card.classList.add('p-6', 'rounded-2xl', 'bg-gray-800/50', 'backdrop-blur-md', 'border', 'border-white/5', 'shadow-xl', 'cursor-pointer', 'hover:bg-gray-700/60', 'smooth-transition', 'flex', 'flex-col', 'justify-between', 'space-y-4');
+                
+                // Add click listener to open detail modal
                 card.onclick = () => openDetailModal(level);
 
                 const html = `
@@ -318,12 +433,12 @@
                     </div>
                     <div>
                         <h2 class="text-3xl font-extrabold text-white">${level.title}</h2>
-                        <p class="text-gray-300 text-sm mt-1">${(level.whatIs || '').split('. ')[0]}...</p>
+                        <p class="text-gray-300 text-sm mt-1">${level.whatIs.split('. ')[0]}...</p>
                     </div>
                     <div class="pt-4 border-t border-white/5">
                         <div class="flex justify-between items-center mb-1">
                             <span class="text-xs text-gray-400 uppercase font-medium">${currentContent.lblProg}</span>
-                            <span class="text-sm font-bold ${level.color}">${(level.prog || '').split('. ')[0]}</span>
+                            <span class="text-sm font-bold ${level.color}">${level.prog.split('. ')[0]}</span>
                         </div>
                         <div class="h-2 w-full bg-gray-700/50 rounded-full overflow-hidden">
                             <div class="h-full ${level.barColor} rounded-full" style="width: ${level.progress};"></div>
@@ -341,35 +456,27 @@
 
             currentContent.levels.forEach(level => {
                 const row = document.createElement('div');
-                row.className = 'flex items-center gap-4 py-2';
+                row.classList.add('flex', 'items-center', 'gap-4', 'py-2');
                 const html = `
                     <div class="w-24 text-right text-xs font-medium text-gray-400 flex-shrink-0">${level.title}</div>
                     <div class="flex-grow h-4 bg-gray-700/50 rounded-full overflow-hidden border border-white/5">
                         <div class="chart-bar-fill h-full ${level.barColor} rounded-full" style="width: ${level.progress};"></div>
                     </div>
-                    <div class="w-10 text-left text-sm font-bold ${level.color} flex-shrink-0">${level.progress.replace('%','')}</div>
+                    <div class="w-10 text-left text-sm font-bold ${level.color} flex-shrink-0">${level.progress.replace('%', '')}</div>
                 `;
                 row.innerHTML = html;
                 chart.appendChild(row);
             });
-            // animate chart bars after insertion
-            requestAnimationFrame(() => {
-                document.querySelectorAll('.chart-bar-fill').forEach(el => {
-                    const w = el.style.width;
-                    el.style.width = '0%';
-                    setTimeout(() => el.style.width = w, 50);
-                });
-            });
         }
-
+        
         function populateVersionsModal() {
             const tbody = document.getElementById('versions-tbody');
             tbody.innerHTML = '';
 
             currentContent.serverVersions.forEach(version => {
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-white/5 smooth-transition';
-
+                row.classList.add('hover:bg-white/5', 'smooth-transition');
+                
                 const html = `
                     <td class="p-3 font-bold text-white">${version.name}</td>
                     <td class="p-3 text-gray-300 hidden sm:table-cell">${version.type}</td>
@@ -387,21 +494,16 @@
         function openModal(modalId, cardId) {
             const modal = document.getElementById(modalId);
             const card = document.getElementById(cardId);
-
+            
             mainCanvas.classList.add('blurred');
-
+            
             modal.classList.remove('opacity-0', 'pointer-events-none');
-            modal.setAttribute('aria-hidden', 'false');
-
             card.classList.remove('scale-90', 'translate-y-4');
-            // reset and force final transform
             card.classList.add('scale-100', 'translate-y-0');
-            // focus the modal card for accessibility
-            setTimeout(() => card.focus(), 120);
         }
 
         function openVersionsModal() {
-            populateVersionsModal();
+            populateVersionsModal(); // Populate the content before opening
             openModal('versions-modal', 'versions-card');
         }
 
@@ -412,34 +514,29 @@
             document.getElementById('m-ext').textContent = levelData.ext;
             document.getElementById('m-whatis').textContent = levelData.whatIs;
             document.getElementById('m-whatdo').textContent = levelData.whatDo;
-            document.getElementById('m-prog-val').textContent = (levelData.prog || '').split('. ')[0];
-
-            // Update bar style safely
+            document.getElementById('m-prog-val').textContent = levelData.prog.split('. ')[0];
+            
+            // Update bar style
             const bar = document.getElementById('m-bar');
-            // replace classes while keeping base classes
-            bar.className = `h-full ${levelData.barColor} rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(99,102,241,0.5)]`;
+            bar.classList.value = `h-full ${levelData.barColor} rounded-full transition-all duration-1000 ease-out shadow-[0_0_15px_rgba(99,102,241,0.5)]`;
             // Set initial width to 0 for animation, then set target width
             bar.style.width = '0%';
             setTimeout(() => {
                 bar.style.width = levelData.progress;
             }, 50);
 
-            // Compute color from the Tailwind bg class and apply as inline background for glow
+            // Update glow color (simple example, need to grab color from classes)
             const glow = document.getElementById('modal-glow');
-            const computedBg = getColorFromTailwindClass(levelData.barColor);
-            if (computedBg) {
-                glow.style.backgroundColor = computedBg;
-                glow.style.opacity = '0.22';
-            } else {
-                glow.style.backgroundColor = '';
-            }
+            glow.classList.remove('bg-indigo-500', 'bg-emerald-500', 'bg-teal-500', 'bg-cyan-500', 'bg-sky-500', 'bg-blue-500', 'bg-violet-500', 'bg-fuchsia-500', 'bg-rose-500', 'bg-red-600', 'bg-amber-400');
+            // Simplified logic: use the first color class for the glow
+            const colorClass = levelData.barColor.replace('bg-', 'bg-'); 
+            glow.classList.add(colorClass);
 
             openModal('detail-modal', 'detail-card');
         }
-
+        
         function toggleSettings() {
-            const settingsModal = document.getElementById('settings-modal');
-            if (settingsModal.classList.contains('opacity-0')) {
+            if (document.getElementById('settings-modal').classList.contains('opacity-0')) {
                 openModal('settings-modal', 'settings-card');
             } else {
                 closeAll();
@@ -448,45 +545,31 @@
 
         function closeAll() {
             mainCanvas.classList.remove('blurred');
-
+            
             modals.forEach(m => {
                 const modal = document.getElementById(m.id);
                 const card = document.getElementById(m.cardId);
 
+                // Hide Modal
                 modal.classList.add('opacity-0', 'pointer-events-none');
-                modal.setAttribute('aria-hidden', 'true');
-
-                // Reset card transform for the closing animation
+                
+                // Reset card transform
                 card.classList.remove('scale-100', 'translate-y-0');
                 card.classList.add('scale-90', 'translate-y-4');
-
-                // small delay: blur removal has already happened, reset focused element
-                if (document.activeElement && (document.activeElement === card)) {
-                    document.activeElement.blur();
-                }
             });
         }
 
         // --- INITIALIZATION ---
-        window.addEventListener('load', () => {
-            // Put your real arrays back into the content object if you trimmed them for this file
-            // (This file kept placeholders in content above to keep the example compact.)
-            // If you replaced here, everything will work as-is.
-
+        window.onload = () => {
             updateUI();
-
+            
             // Close modals on escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
                     closeAll();
                 }
             });
-
-            // Create lucide icons once more in case any dynamic insertion happened after first pass
-            if (typeof lucide !== 'undefined' && lucide.createIcons) {
-                lucide.createIcons();
-            }
-        });
+        };
     </script>
 </body>
 </html>
