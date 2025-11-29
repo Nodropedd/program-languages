@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Programación de Servidores</title>
 
-    <!-- Favicon link (will be set from localStorage if present) -->
+    <!-- Favicon link (updated from localStorage if user uploads one in Settings) -->
     <link id="favicon-link" rel="icon" href="" type="image/png">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -78,7 +78,7 @@
         <div id="cards-grid" class="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4"></div>
 
         <div class="container mx-auto p-4 mt-8 mb-10">
-            <h2 class="text-2xl font-bold mb-6 text-center text-indigo-300 border-t border-white/10 pt-8">Gráfica de Complejidad Técnica</h2>
+            <h2 id="chart-title" class="text-2xl font-bold mb-6 text-center text-indigo-300 border-t border-white/10 pt-8">Gráfica de Complejidad Técnica</h2>
             <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-6 border border-white/5 shadow-2xl">
                 <div id="difficulty-chart" class="flex flex-col gap-3"></div>
             </div>
@@ -142,7 +142,7 @@
     </main>
 </div>
 
-<!-- MODALS -->
+<!-- MODALS (unchanged structure) -->
 <!-- Versions Modal -->
 <div id="versions-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
@@ -217,7 +217,7 @@
                 <span class="font-medium">English</span> <span id="check-en" class="opacity-0 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
             </button>
 
-            <!-- Favicon uploader added here -->
+            <!-- Favicon uploader -->
             <div class="pt-4 border-t border-white/5">
                 <h4 class="font-bold">Appearance</h4>
                 <p class="text-xs text-gray-400">Upload an image to use as the site favicon (stored in localStorage).</p>
@@ -266,7 +266,7 @@
     </div>
 </div>
 
-<!-- Apply Modal (asks for Discord handle) -->
+<!-- Apply Modal -->
 <div id="apply-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="apply-card">
@@ -316,7 +316,7 @@
     </div>
 </div>
 
-<!-- Hiring Chat Modal (Discord-like: left list of posts, right chat) -->
+<!-- Hiring Chat Modal -->
 <div id="hiring-chat-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="hiring-chat-card">
@@ -344,7 +344,7 @@
     </div>
 </div>
 
-<!-- DMs Modal (Discord-like: left list of conversations, right messages) -->
+<!-- DMs Modal -->
 <div id="dms-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="dms-card">
@@ -394,7 +394,46 @@ if (!applications) { applications = []; localStorage.setItem('applications', JSO
 if (!dms) { dms = []; localStorage.setItem('dms', JSON.stringify(dms)); }
 
 /* ==========================
-   UI helpers
+   Translations + levels for both languages
+   ========================== */
+
+const levels_es = [
+  { id:0,title:"Comandos",ext:"/setblock /execute",barColor:"bg-gray-500",progress:"2%",whatIs:"El nivel más básico.",whatDo:"Ejecutar comandos.",prog:"Nula."},
+  { id:1,title:".yml",ext:"YAML Config",barColor:"bg-emerald-500",progress:"10%",whatIs:"Archivos YAML para configurar plugins/servidor.",whatDo:"Editar configuraciones y flags.",prog:"Muy baja."},
+  { id:2,title:".json",ext:"JSON Data",barColor:"bg-teal-500",progress:"20%",whatIs:"JSON para datapacks y datos.",whatDo:"Crear loot tables y estructuras.",prog:"Básica."},
+  { id:3,title:".toml",ext:"TOML / INI",barColor:"bg-cyan-500",progress:"30%",whatIs:"Formatos de configuración (TOML/INI).",whatDo:"Configurar proxies y herramientas externas.",prog:"Baja/media."},
+  { id:4,title:".db",ext:"SQL Database",barColor:"bg-sky-500",progress:"40%",whatIs:"Bases de datos SQL.",whatDo:"Escribir queries y migraciones.",prog:"Intermedia."},
+  { id:5,title:"Logic",ext:"ConditionalEvents",barColor:"bg-blue-500",progress:"50%",whatIs:"Lógica condicional en servidores.",whatDo:"Sistemas avanzados sin Java.",prog:"Media/Alta."},
+  { id:6,title:".sk",ext:"Skript Lang",barColor:"bg-indigo-500",progress:"60%",whatIs:"Lenguaje Skript.",whatDo:"Minijuegos y automatizaciones simples.",prog:"Alta."},
+  { id:7,title:".js",ext:"JavaScript API",barColor:"bg-violet-500",progress:"70%",whatIs:"JavaScript para servidores.",whatDo:"Integraciones web y APIs.",prog:"Avanzado."},
+  { id:8,title:".lua",ext:"Lua Scripting",barColor:"bg-fuchsia-500",progress:"80%",whatIs:"Scripts en Lua.",whatDo:"Automatizaciones y mods ligeros.",prog:"Avanzado."},
+  { id:9,title:"Java",ext:"Spigot / Paper API",barColor:"bg-rose-500",progress:"90%",whatIs:"Plugins Java para servidores.",whatDo:"Desarrollo de plugins profesionales.",prog:"Experto."},
+  { id:10,title:"Modding",ext:"Forge / Fabric",barColor:"bg-red-600",progress:"100%",whatIs:"Modding profundo (Forge/Fabric).",whatDo:"Crear mods que cambian el juego.",prog:"Experto/Profesional."},
+  { id:11,title:"Forks / Motor",ext:"Reescribir el Core",barColor:"bg-amber-400",progress:"110%",whatIs:"Modificar o forkar el motor del servidor.",whatDo:"Cambiar comportamiento base del juego.",prog:"Maestro."}
+];
+
+const levels_en = [
+  { id:0,title:"Commands",ext:"/setblock /execute",barColor:"bg-gray-500",progress:"2%",whatIs:"The most basic level.",whatDo:"Run server commands.",prog:"None."},
+  { id:1,title:".yml",ext:"YAML Config",barColor:"bg-emerald-500",progress:"10%",whatIs:"YAML files to configure plugins/server.",whatDo:"Edit settings and flags.",prog:"Very low."},
+  { id:2,title:".json",ext:"JSON Data",barColor:"bg-teal-500",progress:"20%",whatIs:"JSON for datapacks and data.",whatDo:"Create loot tables and structures.",prog:"Basic."},
+  { id:3,title:".toml",ext:"TOML / INI",barColor:"bg-cyan-500",progress:"30%",whatIs:"Config formats (TOML/INI).",whatDo:"Configure proxies and external tools.",prog:"Low/Medium."},
+  { id:4,title:".db",ext:"SQL Database",barColor:"bg-sky-500",progress:"40%",whatIs:"SQL databases.",whatDo:"Write queries and migrations.",prog:"Intermediate."},
+  { id:5,title:"Logic",ext:"ConditionalEvents",barColor:"bg-blue-500",progress:"50%",whatIs:"Conditional logic systems.",whatDo:"Advanced non-Java systems.",prog:"Medium/High."},
+  { id:6,title:".sk",ext:"Skript Lang",barColor:"bg-indigo-500",progress:"60%",whatIs:"Skript language.",whatDo:"Minigames and simple automation.",prog:"High."},
+  { id:7,title:".js",ext:"JavaScript API",barColor:"bg-violet-500",progress:"70%",whatIs:"JavaScript in-server APIs.",whatDo:"Web integrations and APIs.",prog:"Advanced."},
+  { id:8,title:".lua",ext:"Lua Scripting",barColor:"bg-fuchsia-500",progress:"80%",whatIs:"Lua scripts.",whatDo:"Automations and light mods.",prog:"Advanced."},
+  { id:9,title:"Java",ext:"Spigot / Paper API",barColor:"bg-rose-500",progress:"90%",whatIs:"Java plugins.",whatDo:"Professional plugin development.",prog:"Expert."},
+  { id:10,title:"Modding",ext:"Forge / Fabric",barColor:"bg-red-600",progress:"100%",whatIs:"Deep modding (Forge/Fabric).",whatDo:"Create mods that change the game.",prog:"Expert/Professional."},
+  { id:11,title:"Forks / Engine",ext:"Rewrite the Core",barColor:"bg-amber-400",progress:"110%",whatIs:"Modifying or forking the server engine.",whatDo:"Change base game behavior.",prog:"Master."}
+];
+
+/* helper to select levels for current language */
+function getLevels(){
+    return currentLang === 'en' ? levels_en : levels_es;
+}
+
+/* ==========================
+   UI helpers and i18n of a few static strings
    ========================== */
 function updateHeaderAndLang(){
     const subEs = "Niveles de programar de Minecraft. Wiki por Nodropedd_";
@@ -402,6 +441,9 @@ function updateHeaderAndLang(){
     document.getElementById('app-title').textContent = currentLang === 'es' ? "Programación de Servidores" : "Server Programming";
     document.getElementById('app-subtitle').textContent = currentLang === 'es' ? subEs : subEn;
     document.getElementById('versions-btn-text').textContent = currentLang === 'es' ? "Ver Versiones Core" : "View Core Versions";
+    // chart title translation
+    document.getElementById('chart-title').textContent = currentLang === 'es' ? 'Gráfica de Complejidad Técnica' : 'Technical Complexity Chart';
+    // level header and other labels on change handled by populate functions which use getLevels()
     document.getElementById('check-es').style.opacity = currentLang === 'es' ? 1 : 0;
     document.getElementById('check-en').style.opacity = currentLang === 'en' ? 1 : 0;
 }
@@ -417,14 +459,12 @@ function saveAll(){
 
 function getUser(name){ return users.find(u => u.name === name); }
 function formatRoleDisplay(u){
-    if (!u) return 'Member';
+    if (!u) return currentLang==='en' ? 'Member' : 'Member';
     const parts = [];
     if (u.role === 'admin') parts.push('admin');
     if (u.role === 'server developer') parts.push('server developer');
     if (u.role === 'member') parts.push('member');
-    // legacy: allow isDeveloper flag
     if (u.isDeveloper && !parts.includes('server developer')) parts.push('server developer');
-    // ensure uniqueness and order: admin first
     const unique = [...new Set(parts)];
     return unique.join(', ');
 }
@@ -440,16 +480,12 @@ function refreshUserBadge(){
         badge.textContent = currentUser.name;
         roleEl.textContent = formatRoleDisplay(u);
         roleEl.classList.remove('hidden');
-        // show applications button only for admins
         if (u && u.role === 'admin') appsBtn.classList.remove('hidden'); else appsBtn.classList.add('hidden');
-        // show account section in settings
         document.getElementById('account-section').classList.remove('hidden');
-        // hide quick login panel
         quickLoginCard.classList.add('hidden-el');
-        // update apply visibility: everyone can apply, keep button visible
         applyHeader.classList.remove('hidden-el');
     } else {
-        badge.textContent = 'Guest';
+        badge.textContent = currentLang === 'en' ? 'Guest' : 'Guest';
         roleEl.classList.add('hidden');
         appsBtn.classList.add('hidden');
         document.getElementById('account-section').classList.add('hidden');
@@ -470,7 +506,6 @@ function loadFaviconFromStorage(){
             const preview = document.getElementById('favicon-preview');
             if (preview) preview.innerHTML = `<img src="${b64}" class="file-preview" alt="favicon preview">`;
         } else {
-            // fallback tiny svg
             const fallbackSVG = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect fill='#7c3aed' width='64' height='64' rx='8'/><text x='50%' y='54%' font-size='32' text-anchor='middle' fill='#fff' font-family='sans-serif'>P</text></svg>`);
             link.href = `data:image/svg+xml;utf8,${fallbackSVG}`;
         }
@@ -508,27 +543,13 @@ function removeFavicon(){
 }
 
 /* ==========================
-   Cards & Chart (simplified)
+   Cards & Chart (use getLevels for lang)
    ========================== */
-const levels = [
-  { id:0,title:"Comandos",ext:"/setblock /execute",barColor:"bg-gray-500",progress:"2%",color:"text-gray-400",whatIs:"El nivel más básico.",whatDo:"Ejecutar comandos." , prog:"Nula."},
-  { id:1,title:".yml",ext:"YAML Config",barColor:"bg-emerald-500",progress:"10%",color:"text-emerald-400",whatIs:"YAML configs.",whatDo:"Editar plugins.",prog:"Muy Baja."},
-  { id:2,title:".json",ext:"JSON Data",barColor:"bg-teal-500",progress:"20%",color:"text-teal-400",whatIs:"JSON for datapacks.",whatDo:"Crear loot tables.",prog:"Básica."},
-  { id:3,title:".toml",ext:"TOML / INI",barColor:"bg-cyan-500",progress:"30%",color:"text-cyan-400",whatIs:"TOML/INI.",whatDo:"Proxies y configs.",prog:"Baja/Media."},
-  { id:4,title:".db",ext:"SQL Database",barColor:"bg-sky-500",progress:"40%",color:"text-sky-400",whatIs:"SQL DBs.",whatDo:"Migraciones y queries.",prog:"Intermedia."},
-  { id:5,title:"Logic",ext:"ConditionalEvents",barColor:"bg-blue-500",progress:"50%",color:"text-blue-400",whatIs:"Lógica condicional.",whatDo:"Sistemas sin Java.",prog:"Lógica."},
-  { id:6,title:".sk",ext:"Skript Lang",barColor:"bg-indigo-500",progress:"60%",color:"text-indigo-400",whatIs:"Skript.",whatDo:"Minijuegos.",prog:"Alta."},
-  { id:7,title:".js",ext:"JavaScript API",barColor:"bg-violet-500",progress:"70%",color:"text-violet-400",whatIs:"JS in server.",whatDo:"Conectar websockets.",prog:"Web."},
-  { id:8,title:".lua",ext:"Lua Scripting",barColor:"bg-fuchsia-500",progress:"80%",color:"text-fuchsia-400",whatIs:"Lua.",whatDo:"Automatización.",prog:"Estructurada."},
-  { id:9,title:"Java",ext:"Spigot / Paper API",barColor:"bg-rose-500",progress:"90%",color:"text-rose-400",whatIs:"Java plugins.",whatDo:"Plugins profesionales.",prog:"Avanzado."},
-  { id:10,title:"Modding",ext:"Forge / Fabric",barColor:"bg-red-600",progress:"100%",color:"text-red-500",whatIs:"Modding.",whatDo:"Agregar bloques/dimensiones.",prog:"Experto."},
-  { id:11,title:"Forks / Motor",ext:"Reescribir el Core",barColor:"bg-amber-400",progress:"110%",color:"text-amber-300",whatIs:"Forks.",whatDo:"Modificar el core.",prog:"Maestro."}
-];
-
 function populateCards(){
     const grid = document.getElementById('cards-grid');
     grid.innerHTML = '';
-    levels.forEach(level => {
+    const data = getLevels();
+    data.forEach(level => {
         const card = document.createElement('div');
         card.className = 'p-6 rounded-2xl bg-gray-800/50 border border-white/5 shadow-xl cursor-pointer hover:bg-gray-700/60 smooth-transition flex flex-col justify-between';
         card.onclick = ()=> openDetailModal(level);
@@ -558,7 +579,8 @@ function populateCards(){
 function populateChart(){
     const chart = document.getElementById('difficulty-chart');
     chart.innerHTML = '';
-    levels.forEach(level=>{
+    const data = getLevels();
+    data.forEach(level=>{
         const row = document.createElement('div');
         row.className='flex items-center gap-4 py-2';
         row.innerHTML = `
@@ -566,7 +588,7 @@ function populateChart(){
             <div class="flex-grow h-4 bg-gray-700/50 rounded-full overflow-hidden border border-white/5">
                 <div class="chart-bar-fill h-full ${level.barColor}" style="width:${level.progress}"></div>
             </div>
-            <div class="w-10 text-left text-sm font-bold ${level.color}">${level.progress.replace('%','')}</div>
+            <div class="w-10 text-left text-sm font-bold ${level.color}">${String(level.progress).replace('%','')}</div>
         `;
         chart.appendChild(row);
     });
@@ -665,36 +687,36 @@ function registerUser(){
     currentUser = { name: usr.name, role: usr.role };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     refreshUserBadge(); closeAll();
-    alert('Registered and logged in as ' + usr.name);
+    alert((currentLang === 'en' ? 'Registered and logged in as ' : 'Registrado e iniciado sesión como ') + usr.name);
 }
 function loginUser(){
     const name = (document.getElementById('login-name').value || '').trim();
     const pass = (document.getElementById('login-pass').value || '').trim();
     const u = getUser(name);
-    if (!u || u.pass !== pass) return alert('Invalid credentials.');
+    if (!u || u.pass !== pass) return alert(currentLang === 'en' ? 'Invalid credentials.' : 'Credenciales inválidas.');
     currentUser = { name: u.name, role: u.role };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     refreshUserBadge(); closeAll();
-    alert('Welcome back, ' + u.name);
+    alert((currentLang === 'en' ? 'Welcome back, ' : 'Bienvenido de nuevo, ') + u.name);
 }
 function logout(){
     currentUser = null;
     localStorage.removeItem('currentUser');
     refreshUserBadge();
     closeAll();
-    alert('Logged out.');
+    alert(currentLang === 'en' ? 'Logged out.' : 'Sesión cerrada.');
 }
 function changePassword(){
-    if (!currentUser) return alert('Login first.');
+    if (!currentUser) return alert(currentLang === 'en' ? 'Login first.' : 'Inicia sesión primero.');
     const oldPass = (document.getElementById('old-pass').value || '').trim();
     const newPass = (document.getElementById('new-pass').value || '').trim();
-    if (!oldPass || !newPass) return alert('Fill both fields.');
+    if (!oldPass || !newPass) return alert(currentLang === 'en' ? 'Fill both fields.' : 'Rellena ambos campos.');
     const u = getUser(currentUser.name);
     if (!u) return alert('User record missing.');
-    if (u.pass !== oldPass) return alert('Current password is incorrect.');
+    if (u.pass !== oldPass) return alert(currentLang === 'en' ? 'Current password is incorrect.' : 'La contraseña actual es incorrecta.');
     u.pass = newPass; saveAll();
     document.getElementById('old-pass').value = ''; document.getElementById('new-pass').value = '';
-    alert('Password changed.');
+    alert(currentLang === 'en' ? 'Password changed.' : 'Contraseña cambiada.');
 }
 
 /* ==========================
@@ -735,7 +757,7 @@ function renderMessages(){
 function sendMessage(){
     const txt = (document.getElementById('forum-input').value || '').trim();
     if (!txt) return;
-    if (!currentUser) return alert('Please login/register first (top-right icon).');
+    if (!currentUser) return alert(currentLang === 'en' ? 'Please login/register first (top-right icon).' : 'Por favor inicia sesión/registrate primero (icono arriba a la derecha).');
     const id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
     const userRecord = getUser(currentUser.name);
     const msg = { id, user: currentUser.name, role: userRecord?.role || 'member', text: txt, ts: Date.now() };
@@ -743,41 +765,39 @@ function sendMessage(){
     document.getElementById('forum-input').value = '';
 }
 function removeMessage(id){
-    if (!currentUser) return alert('Not allowed.');
+    if (!currentUser) return alert(currentLang === 'en' ? 'Not allowed.' : 'No permitido.');
     const idx = messages.findIndex(m=>m.id===id); if (idx===-1) return;
     const urec = getUser(currentUser.name);
     if (urec && (urec.role === 'admin' || messages[idx].user === currentUser.name)) {
         messages.splice(idx,1); saveAll(); renderMessages();
-    } else alert('Not permitted.');
+    } else alert(currentLang === 'en' ? 'Not permitted.' : 'No permitido.');
 }
 
 /* ==========================
    Friend & DM helpers (Discord-like)
    ========================== */
 function addFriendFromMsg(username){
-    if (!currentUser) return alert('Login to add friends.');
+    if (!currentUser) return alert(currentLang === 'en' ? 'Login to add friends.' : 'Inicia sesión para agregar amigos.');
     const u = getUser(currentUser.name);
     if (!u) return alert('User record missing.');
     u.friends = u.friends || [];
-    if (u.friends.includes(username)) return alert('Already friend.');
-    u.friends.push(username); saveAll(); alert(username + ' added to friends.');
+    if (u.friends.includes(username)) return alert(currentLang === 'en' ? 'Already friend.' : 'Ya es amigo.');
+    u.friends.push(username); saveAll(); alert((currentLang === 'en' ? username + ' added to friends.' : username + ' añadido a amigos.'));
 }
 
 function openDMModal(){ openModal('dms-modal','dms-card'); renderDMConversations(); }
 function openDMFromUser(username){
-    if (!currentUser) return alert('Login to DM.');
-    // auto-create or open conversation, like Discord: select on left and show right
+    if (!currentUser) return alert(currentLang === 'en' ? 'Login to DM.' : 'Inicia sesión para enviar DMs.');
     startDMWith(username);
 }
 function startDM(){
     const name = (document.getElementById('new-dm-user').value || '').trim();
-    if (!name) return alert('Enter username to DM.');
+    if (!name) return alert(currentLang === 'en' ? 'Enter username to DM.' : 'Introduce un nombre de usuario.');
     startDMWith(name);
 }
 function startDMWith(name){
-    if (!currentUser) return alert('Login to DM.');
-    if (!getUser(name)) return alert('User not found.');
-    // find or create conversation
+    if (!currentUser) return alert(currentLang === 'en' ? 'Login to DM.' : 'Inicia sesión para enviar DMs.');
+    if (!getUser(name)) return alert(currentLang === 'en' ? 'User not found.' : 'Usuario no encontrado.');
     let convo = dms.find(c => c.participants.includes(currentUser.name) && c.participants.includes(name));
     if (!convo) {
         convo = { id: 'dm_' + Date.now() + '_' + Math.random().toString(36,6), participants: [currentUser.name, name], messages: [] };
@@ -790,7 +810,6 @@ function startDMWith(name){
 function renderDMConversations(selectedId){
     const container = document.getElementById('dm-conversations');
     container.innerHTML = '';
-    // list user's conversations (sorted by last message)
     const myConvos = dms.filter(c => c.participants.includes(currentUser ? currentUser.name : ''))
                         .sort((a,b)=> {
                             const la = a.messages.length ? a.messages[a.messages.length-1].ts : 0;
@@ -799,7 +818,7 @@ function renderDMConversations(selectedId){
                         });
     myConvos.forEach(c=>{
         const other = c.participants.find(p => p !== currentUser.name);
-        const last = c.messages.length ? c.messages[c.messages.length-1].text.slice(0,40) : 'No messages';
+        const last = c.messages.length ? c.messages[c.messages.length-1].text.slice(0,40) : (currentLang==='en'?'No messages':'Sin mensajes');
         const el = document.createElement('div');
         el.className = 'p-2 rounded-lg clickable hover:bg-white/5';
         if (c.id === selectedId) el.classList.add('selected');
@@ -807,10 +826,9 @@ function renderDMConversations(selectedId){
         el.onclick = ()=> { renderDMWindow(c.id); renderDMConversations(c.id); };
         container.appendChild(el);
     });
-    // friends fallback
     const u = getUser(currentUser ? currentUser.name : '');
     if (u && u.friends && u.friends.length) {
-        const friendsHeader = document.createElement('div'); friendsHeader.className='text-xs text-gray-400 mt-2'; friendsHeader.textContent='Friends';
+        const friendsHeader = document.createElement('div'); friendsHeader.className='text-xs text-gray-400 mt-2'; friendsHeader.textContent = currentLang==='en'?'Friends':'Amigos';
         container.appendChild(friendsHeader);
         u.friends.forEach(f=>{
             const el = document.createElement('div');
@@ -824,9 +842,9 @@ function renderDMConversations(selectedId){
 let activeDMId = null;
 function renderDMWindow(dmId){
     const win = document.getElementById('dm-window');
-    win.innerHTML = '<div class="text-xs text-gray-400">Loading...</div>';
+    win.innerHTML = '<div class="text-xs text-gray-400">'+(currentLang==='en'?'Loading...':'Cargando...')+'</div>';
     const convo = dms.find(c=>c.id===dmId);
-    if (!convo) { win.innerHTML = '<div class="text-sm text-gray-400">Conversation not found.</div>'; return; }
+    if (!convo) { win.innerHTML = '<div class="text-sm text-gray-400">'+(currentLang==='en'?'Conversation not found.':'Conversación no encontrada.')+'</div>'; return; }
     activeDMId = dmId;
     win.innerHTML = '';
     convo.messages.forEach(m=>{
@@ -838,12 +856,12 @@ function renderDMWindow(dmId){
     win.scrollTop = win.scrollHeight;
 }
 function sendDM(){
-    if (!currentUser) return alert('Login to send DMs.');
-    if (!activeDMId) return alert('Open a conversation first.');
+    if (!currentUser) return alert(currentLang==='en'?'Login to send DMs.':'Inicia sesión para enviar DMs.');
+    if (!activeDMId) return alert(currentLang==='en'?'Open a conversation first.':'Abre una conversación primero.');
     const txt = (document.getElementById('dm-input').value || '').trim();
     if (!txt) return;
     const convo = dms.find(c=>c.id===activeDMId);
-    if (!convo) return alert('Conversation missing.');
+    if (!convo) return alert(currentLang==='en'?'Conversation missing.':'Conversación no encontrada.');
     convo.messages.push({ sender: currentUser.name, text: txt, ts: Date.now() });
     saveAll(); renderDMWindow(activeDMId); document.getElementById('dm-input').value = '';
     renderDMConversations(activeDMId);
@@ -851,6 +869,9 @@ function sendDM(){
 
 /* ==========================
    Hiring posts & per-post chats (Discord-like)
+   Changes:
+   - No longer mirror hiring chat messages to public forum.
+   - On startup we remove any leftover mirrored messages (they start with "[Hiring:")
    ========================== */
 function renderHiring(){
     const list = document.getElementById('hiring-list');
@@ -866,8 +887,8 @@ function renderHiring(){
                     <div class="text-xs text-gray-300 mt-1">By: <strong>${escapeHtml(p.owner)}</strong> — <span class="text-emerald-400">${escapeHtml(p.price)}</span></div>
                 </div>
                 <div class="flex flex-col gap-2">
-                    <button class="pill text-sm" onclick="openHiringChat('${p.id}')">Open Chat</button>
-                    ${currentUser && (getUser(currentUser.name).role === 'admin' || currentUser.name === p.owner) ? `<button class="pill text-sm text-red-400" onclick="removeHiring('${p.id}')">Remove</button>` : ''}
+                    <button class="pill text-sm" onclick="openHiringChat('${p.id}')">${currentLang==='en'?'Open Chat':'Abrir Chat'}</button>
+                    ${currentUser && (getUser(currentUser.name).role === 'admin' || currentUser.name === p.owner) ? `<button class="pill text-sm text-red-400" onclick="removeHiring('${p.id}')">${currentLang==='en'?'Remove':'Eliminar'}</button>` : ''}
                 </div>
             </div>
         `;
@@ -877,7 +898,7 @@ function renderHiring(){
 let currentHiringChat = null;
 function openHiringChat(postId){
     const post = hiringPosts.find(p=>p.id===postId);
-    if (!post) return alert('Post not found');
+    if (!post) return alert(currentLang==='en'?'Post not found':'Publicación no encontrada');
     openModal('hiring-chat-modal','hiring-chat-card');
     currentHiringChat = postId;
     renderHiringPostsList(postId);
@@ -901,11 +922,11 @@ function renderHiringChat(postId){
     const chat = hiringChats[postId] || [];
     const post = hiringPosts.find(p=>p.id===postId);
     if (post) {
-        document.getElementById('hchat-title').textContent = `Chat: ${post.title}`;
-        document.getElementById('hchat-sub').textContent = `Owner: ${post.owner} — Price: ${post.price}`;
+        document.getElementById('hchat-title').textContent = `${currentLang==='en'?'Chat:':'Chat:'} ${post.title}`;
+        document.getElementById('hchat-sub').textContent = `${currentLang==='en'?'Owner':'Propietario'}: ${post.owner} — ${currentLang==='en'?'Price':'Precio'}: ${post.price}`;
     } else {
-        document.getElementById('hchat-title').textContent = `Chat`;
-        document.getElementById('hchat-sub').textContent = `Select a hiring post`;
+        document.getElementById('hchat-title').textContent = currentLang==='en'?'Chat':'Chat';
+        document.getElementById('hchat-sub').textContent = currentLang==='en'?'Select a hiring post':'Selecciona una publicación';
     }
     chat.forEach(m=>{
         const row = document.createElement('div');
@@ -916,45 +937,43 @@ function renderHiringChat(postId){
     box.scrollTop = box.scrollHeight;
 }
 function sendHiringChat(){
-    if (!currentUser) return alert('Login to chat.');
-    if (!currentHiringChat) return alert('No chat open.');
+    if (!currentUser) return alert(currentLang==='en'?'Login to chat.':'Inicia sesión para chatear.');
+    if (!currentHiringChat) return alert(currentLang==='en'?'No chat open.':'No hay chat abierto.');
     const txt = (document.getElementById('hchat-input').value || '').trim();
     if (!txt) return;
     hiringChats[currentHiringChat] = hiringChats[currentHiringChat] || [];
     hiringChats[currentHiringChat].push({ sender: currentUser.name, text: txt, ts: Date.now() });
     saveAll(); renderHiringChat(currentHiringChat); document.getElementById('hchat-input').value = '';
-    // also mirror to public messages as a short record (optional)
-    messages.push({ id: 'hmsg_' + Date.now(), user: currentUser.name, role: getUser(currentUser.name)?.role || 'member', text: `[Hiring:${currentHiringChat}] ${txt}`, ts: Date.now() });
-    saveAll(); renderMessages();
+    // IMPORTANT: mirror removed. Previously we pushed a message into messages prefixed with [Hiring:...].
 }
 
 /* Create, remove hiring posts */
 function createHiringPost(){
-    if (!currentUser) return alert('Login first.');
+    if (!currentUser) return alert(currentLang==='en'?'Login first.':'Inicia sesión primero.');
     const u = getUser(currentUser.name);
     if (!u) return alert('User record missing.');
-    if (!(u.role === 'server developer' || u.role === 'admin' || u.isDeveloper)) return alert('Only server developers or admins can create hiring posts.');
+    if (!(u.role === 'server developer' || u.role === 'admin' || u.isDeveloper)) return alert(currentLang==='en'?'Only server developers or admins can create hiring posts.':'Solo desarrolladores de servidor o administradores pueden crear publicaciones de contratación.');
     const now = Date.now();
     if (!u.lastReset || now - u.lastReset > 30*24*3600*1000) { u.postsThisMonth = 0; u.lastReset = now; }
-    if ((u.postsThisMonth || 0) >= 3) return alert('You reached 3 hiring posts this month.');
+    if ((u.postsThisMonth || 0) >= 3) return alert(currentLang==='en'?'You reached 3 hiring posts this month.':'Has alcanzado 3 publicaciones este mes.');
     const title = (document.getElementById('h-title').value || '').trim();
     const price = (document.getElementById('h-price').value || '').trim();
     const desc = (document.getElementById('h-desc').value || '').trim();
-    if (!title || !price || !desc) return alert('Fill title, price and description.');
+    if (!title || !price || !desc) return alert(currentLang==='en'?'Fill title, price and description.':'Rellena título, precio y descripción.');
     const id = 'hp_' + Date.now() + '_' + Math.random().toString(36,6);
     hiringPosts.push({ id, owner: currentUser.name, title, price, desc, ts: Date.now() });
     u.postsThisMonth = (u.postsThisMonth || 0) + 1;
     saveAll(); renderHiring(); closeAll();
-    alert('Hiring post created. Payments outside the website.');
+    alert(currentLang==='en'?'Hiring post created. Payments outside the website.':'Publicación creada. Pagos fuera del sitio.');
 }
 function removeHiring(id){
-    if (!currentUser) return alert('Not allowed.');
+    if (!currentUser) return alert(currentLang==='en'?'Not allowed.':'No permitido.');
     const idx = hiringPosts.findIndex(h=>h.id===id);
     if (idx===-1) return;
     const urec = getUser(currentUser.name);
     if (urec && (urec.role === 'admin' || hiringPosts[idx].owner === currentUser.name)) {
         hiringPosts.splice(idx,1); delete hiringChats[id]; saveAll(); renderHiring();
-    } else alert('Not permitted.');
+    } else alert(currentLang==='en'?'Not permitted.':'No permitido.');
 }
 
 /* ==========================
@@ -962,18 +981,18 @@ function removeHiring(id){
    ========================== */
 function openApplyModal(){ openModal('apply-modal','apply-card'); }
 function submitApplication(){
-    if (!currentUser) return alert('Login first to apply.');
+    if (!currentUser) return alert(currentLang==='en'?'Login first to apply.':'Inicia sesión para aplicar.');
     const discord = (document.getElementById('apply-discord').value || '').trim();
     const txt = (document.getElementById('apply-msg').value || '').trim();
-    if (!discord || !txt) return alert('Please include your Discord handle and a short description.');
+    if (!discord || !txt) return alert(currentLang==='en'?'Please include your Discord handle and a short description.':'Por favor incluye tu Discord y una descripción.');
     const id = 'app_' + Date.now() + '_' + Math.random().toString(36,6);
     applications.push({ id, user: currentUser.name, discord, text: txt, ts: Date.now() });
-    saveAll(); closeAll(); alert('Application submitted. Admins will review and can assign the "server developer" role.');
+    saveAll(); closeAll(); alert(currentLang==='en'?'Application submitted. Admins will review.':'Solicitud enviada. Los administradores la revisarán.');
 }
 function openApplicationsModal(){
-    if (!currentUser) return alert('Only admins can view applications.');
+    if (!currentUser) return alert(currentLang==='en'?'Only admins can view applications.':'Solo los administradores pueden ver solicitudes.');
     const u = getUser(currentUser.name);
-    if (!u || u.role !== 'admin') return alert('Only admins can view applications.');
+    if (!u || u.role !== 'admin') return alert(currentLang==='en'?'Only admins can view applications.':'Solo los administradores pueden ver solicitudes.');
     const list = document.getElementById('applications-list');
     list.innerHTML = '';
     applications.forEach(a=>{
@@ -987,8 +1006,8 @@ function openApplicationsModal(){
                 <div class="text-xs text-gray-400 mt-1">${new Date(a.ts).toLocaleString()}</div>
             </div>
             <div class="flex flex-col gap-2">
-                <button class="pill text-sm" onclick="acceptApplication('${a.id}')">Accept</button>
-                <button class="pill text-sm text-red-400" onclick="rejectApplication('${a.id}')">Reject</button>
+                <button class="pill text-sm" onclick="acceptApplication('${a.id}')">${currentLang==='en'?'Accept':'Aceptar'}</button>
+                <button class="pill text-sm text-red-400" onclick="rejectApplication('${a.id}')">${currentLang==='en'?'Reject':'Rechazar'}</button>
             </div>
         `;
         list.appendChild(el);
@@ -996,40 +1015,37 @@ function openApplicationsModal(){
     openModal('applications-modal','applications-card');
 }
 function acceptApplication(appId){
-    const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
+    const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert(currentLang==='en'?'Application not found.':'Solicitud no encontrada.');
     const a = applications[idx];
     const u = getUser(a.user);
-    if (!u) return alert('Applicant user not found.');
-    // IMPORTANT: if the user is admin, keep admin role and set isDeveloper flag
+    if (!u) return alert(currentLang==='en'?'Applicant user not found.':'Usuario solicitante no encontrado.');
     if (u.role === 'admin') {
         u.isDeveloper = true;
     } else {
         u.role = 'server developer';
         u.isDeveloper = true;
     }
-    // remove application
     applications.splice(idx,1); saveAll();
     openApplicationsModal(); renderHiring();
-    alert(a.user + ' has been granted server developer access (role preserved if admin).');
+    alert((currentLang==='en'?a.user + ' has been granted server developer access.': a.user + ' ha recibido acceso de developer.'));
 }
 function rejectApplication(appId){
-    const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
+    const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert(currentLang==='en'?'Application not found.':'Solicitud no encontrada.');
     const a = applications[idx];
     applications.splice(idx,1); saveAll();
     openApplicationsModal();
-    alert('Rejected application of ' + a.user);
+    alert(currentLang==='en'?'Rejected application of ' + a.user:'Solicitud rechazada de ' + a.user);
 }
 
 /* ==========================
    Admin role assignment helper (fallback)
    ========================== */
 function adminAssignRole(userName, role){
-    if (!currentUser) return alert('Only admins can assign roles.');
+    if (!currentUser) return alert(currentLang==='en'?'Only admins can assign roles.':'Solo administradores pueden asignar roles.');
     const ucur = getUser(currentUser.name);
-    if (!ucur || ucur.role !== 'admin') return alert('Only admins can assign roles.');
+    if (!ucur || ucur.role !== 'admin') return alert(currentLang==='en'?'Only admins can assign roles.':'Solo administradores pueden asignar roles.');
     const u = getUser(userName);
-    if (!u) return alert('User not found');
-    // If assigning 'server developer' to an admin, keep admin and set flag
+    if (!u) return alert(currentLang==='en'?'User not found':'Usuario no encontrado');
     if (role === 'server developer' && u.role === 'admin') {
         u.isDeveloper = true;
     } else {
@@ -1040,25 +1056,25 @@ function adminAssignRole(userName, role){
     if (currentUser.name === userName) currentUser.role = u.role;
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     refreshUserBadge(); renderMessages(); renderHiring();
-    alert(`Assigned role ${role} to ${userName}`);
+    alert((currentLang==='en'?`Assigned role ${role} to ${userName}`:`Asignado rol ${role} a ${userName}`));
 }
 
 /* ==========================
    Startup & event wiring
+   - cleanup mirrored hiring messages on init
    ========================== */
 document.getElementById('send-btn').addEventListener('click', sendMessage);
 document.getElementById('forum-input').addEventListener('keydown', (e)=> { if (e.key === 'Enter') sendMessage(); });
 document.getElementById('create-hiring-btn').addEventListener('click', ()=>{
-    if (!currentUser) return alert('Login to create a hiring post (server developer or admin).');
+    if (!currentUser) return alert(currentLang==='en'?'Login to create a hiring post (server developer or admin).':'Inicia sesión para crear una publicación.');
     const rec = getUser(currentUser.name);
-    if (!(rec && (rec.role==='server developer' || rec.role==='admin' || rec.isDeveloper))) return alert('Only server developers or admins can create hiring posts.');
+    if (!(rec && (rec.role==='server developer' || rec.role==='admin' || rec.isDeveloper))) return alert(currentLang==='en'?'Only server developers or admins can create hiring posts.':'Solo desarrolladores o administradores pueden crear publicaciones.');
     openModal('create-hiring-modal','create-hiring-card');
 });
 
-// language change
-function changeLang(lang){ currentLang = lang; localStorage.setItem('lang', lang); updateHeaderAndLang(); populateCards(); populateChart(); }
+function changeLang(lang){ currentLang = lang; localStorage.setItem('lang', lang); updateHeaderAndLang(); populateCards(); populateChart(); renderMessages(); renderHiring(); }
 
-// expose functions to window for inline handlers
+/* expose some functions to window for inline handlers */
 window.openLoginModal = openLoginModal;
 window.openApplyModal = openApplyModal;
 window.openVersionsModal = openVersionsModal;
@@ -1073,6 +1089,14 @@ window.removeFavicon = removeFavicon;
 
 /* initial render */
 function init(){
+    // remove existing mirrored hiring messages (text starting with "[Hiring:")
+    let removed = false;
+    messages = messages.filter(m => {
+        if (typeof m.text === 'string' && m.text.startsWith('[Hiring:')) { removed = true; return false; }
+        return true;
+    });
+    if (removed) { saveAll(); }
+
     updateHeaderAndLang();
     populateCards();
     populateChart();
@@ -1083,7 +1107,7 @@ function init(){
     lucide.createIcons();
     // seed a neutral system message if empty
     if (messages.length === 0) {
-        messages.push({ id:'m_sys_1', user:'System', role:'system', text: 'Welcome to Forums Chat! Create an account to post, DM others and apply for Server Developer.', ts: Date.now() });
+        messages.push({ id:'m_sys_1', user:'System', role:'system', text: (currentLang==='en'?'Welcome to Forums Chat! Create an account to post, DM others and apply for Server Developer.':'Welcome to Forums Chat! Create an account to post, DM others and apply for Server Developer.'), ts: Date.now() });
         saveAll();
         renderMessages();
     }
