@@ -1,286 +1,391 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Programación de Servidores</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Programación de Servidores</title>
 
-  <!-- Favicon link (will be set from localStorage if present) -->
-  <link id="favicon-link" rel="icon" href="" type="image/png">
+    <!-- Favicon link (will be set from localStorage if present) -->
+    <link id="favicon-link" rel="icon" href="" type="image/png">
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; }
-    .smooth-transition { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
-    .animated-bg {
-      background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #0f172a);
-      background-size: 400% 400%;
-      animation: gradient 15s ease infinite;
-    }
-    @keyframes gradient { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
-    .no-scrollbar::-webkit-scrollbar { display:none } .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
-    .custom-scrollbar::-webkit-scrollbar{ width:8px } .custom-scrollbar::-webkit-scrollbar-thumb{ background-color: rgba(99,102,241,0.5); border-radius:4px }
-    .custom-scrollbar::-webkit-scrollbar-track{ background-color: rgba(255,255,255,0.05) }
-    .blurred { filter: blur(8px) brightness(0.7); transform: scale(0.98); pointer-events: none; }
-    .chart-bar-fill { width:0; transition: width 1.5s cubic-bezier(0.22,1,0.36,1); }
-    .role-badge { font-size: 11px; padding: 2px 6px; border-radius: 999px; }
-    .guest-icon { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:999px; background:rgba(255,255,255,0.03); }
-    .msg { padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.03); }
-    .msg-admin { background: rgba(236,72,153,0.06); border:1px solid rgba(236,72,153,0.08) }
-    .small { font-size:12px }
-    .pill { padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04) }
-    .chat-box { max-height: 320px; overflow-y: auto; }
-    .clickable { cursor: pointer; }
-    .selected { background: rgba(99,102,241,0.12); }
-    .hidden-el { display: none !important; }
-    .file-preview { max-width:64px; max-height:64px; border-radius:8px; display:inline-block; object-fit:cover; }
-  </style>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;500;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .smooth-transition { transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        .animated-bg {
+            background: linear-gradient(-45deg, #0f172a, #1e1b4b, #312e81, #0f172a);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        @keyframes gradient { 0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%} }
+        .no-scrollbar::-webkit-scrollbar { display:none } .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none; }
+        .custom-scrollbar::-webkit-scrollbar{ width:8px } .custom-scrollbar::-webkit-scrollbar-thumb{ background-color: rgba(99,102,241,0.5); border-radius:4px }
+        .custom-scrollbar::-webkit-scrollbar-track{ background-color: rgba(255,255,255,0.05) }
+        .blurred { filter: blur(8px) brightness(0.7); transform: scale(0.98); pointer-events: none; }
+        .chart-bar-fill { width:0; transition: width 1.5s cubic-bezier(0.22,1,0.36,1); }
+        .role-badge { font-size: 11px; padding: 2px 6px; border-radius: 999px; }
+        .guest-icon { width:38px; height:38px; display:flex; align-items:center; justify-content:center; border-radius:999px; background:rgba(255,255,255,0.03); }
+        .msg { padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.03); }
+        .msg-admin { background: rgba(236,72,153,0.06); border:1px solid rgba(236,72,153,0.08) }
+        .small { font-size:12px }
+        .pill { padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04) }
+        .chat-box { max-height: 320px; overflow-y: auto; }
+        .clickable { cursor: pointer; }
+        .selected { background: rgba(99,102,241,0.12); }
+        /* hide element helper */
+        .hidden-el { display: none !important; }
+        .file-preview { max-width:64px; max-height:64px; border-radius:8px; display:inline-block; object-fit:cover; }
+    </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden animated-bg selection:bg-indigo-500 selection:text-white">
 
-  <div id="main-canvas" class="h-full w-full flex flex-col smooth-transition origin-center">
+<div id="main-canvas" class="h-full w-full flex flex-col smooth-transition origin-center">
     <header class="flex flex-col md:flex-row justify-between items-center px-6 py-5 z-10 gap-4">
-      <div class="text-center md:text-left">
-        <h1 id="app-title" class="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Programación de Servidores</h1>
-        <p id="app-subtitle" class="text-gray-300 text-sm font-medium mt-1 tracking-wide">Niveles de programar de Minecraft. Wiki por Nodropedd_</p>
-      </div>
+        <div class="text-center md:text-left">
+            <h1 id="app-title" class="text-3xl md:text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-400 to-cyan-400">Programación de Servidores</h1>
+            <p id="app-subtitle" class="text-gray-300 text-sm font-medium mt-1 tracking-wide">Niveles de programar de Minecraft. Wiki por Nodropedd_</p>
+        </div>
 
-      <div class="flex gap-3 items-center">
-        <button onclick="openVersionsModal()" class="group relative p-3 px-4 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/30 transition-all duration-300 shadow-lg backdrop-blur-md flex items-center gap-2 text-sm font-medium text-indigo-300 hover:text-white">
-          <i data-lucide="server" class="w-5 h-5"></i><span id="versions-btn-text">Ver Versiones Core</span>
-        </button>
+        <div class="flex gap-3 items-center">
+            <button onclick="openVersionsModal()" class="group relative p-3 px-4 rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-400/30 transition-all duration-300 shadow-lg backdrop-blur-md flex items-center gap-2 text-sm font-medium text-indigo-300 hover:text-white">
+                <i data-lucide="server" class="w-5 h-5"></i><span id="versions-btn-text">Ver Versiones Core</span>
+            </button>
 
-        <button id="dm-btn" onclick="openDMModal()" class="guest-icon hover:scale-105 transition-transform" title="Direct messages">
-          <span class="text-2xl">💬</span>
-        </button>
+            <!-- DM icon -->
+            <button id="dm-btn" onclick="openDMModal()" class="guest-icon hover:scale-105 transition-transform" title="Direct messages">
+                <span class="text-2xl">💬</span>
+            </button>
 
-        <button id="apps-btn" onclick="openApplicationsModal()" class="guest-icon hover:scale-105 transition-transform hidden" title="View applications">
-          <span class="text-2xl">📄</span>
-        </button>
+            <!-- Applications (paper) - visible to admins -->
+            <button id="apps-btn" onclick="openApplicationsModal()" class="guest-icon hover:scale-105 transition-transform hidden" title="View applications">
+                <span class="text-2xl">📄</span>
+            </button>
 
-        <button id="guest-btn" onclick="openLoginModal()" class="guest-icon hover:scale-105 transition-transform" title="Login / Register">
-          <span id="guest-emoji" class="text-2xl">👤</span>
-        </button>
+            <!-- guest / login icon -->
+            <button id="guest-btn" onclick="openLoginModal()" class="guest-icon hover:scale-105 transition-transform" title="Login / Register">
+                <span id="guest-emoji" class="text-2xl">👤</span>
+            </button>
 
-        <button id="settings-btn" onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
-          <i data-lucide="settings" class="w-6 h-6 text-gray-300 group-hover:text-white"></i>
-        </button>
-      </div>
+            <button id="settings-btn" onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
+                <i data-lucide="settings" class="w-6 h-6 text-gray-300 group-hover:text-white"></i>
+            </button>
+        </div>
     </header>
 
     <main class="flex-grow overflow-y-auto no-scrollbar px-4 pb-10 scroll-smooth">
-      <div id="cards-grid" class="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4"></div>
+        <div id="cards-grid" class="container mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-4"></div>
 
-      <div class="container mx-auto p-4 mt-8 mb-10">
-        <h2 class="text-2xl font-bold mb-6 text-center text-indigo-300 border-t border-white/10 pt-8">Gráfica de Complejidad Técnica</h2>
-        <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-6 border border-white/5 shadow-2xl">
-          <div id="difficulty-chart" class="flex flex-col gap-3"></div>
+        <div class="container mx-auto p-4 mt-8 mb-10">
+            <h2 class="text-2xl font-bold mb-6 text-center text-indigo-300 border-t border-white/10 pt-8">Gráfica de Complejidad Técnica</h2>
+            <div class="bg-gray-800/50 backdrop-blur-md rounded-3xl p-6 border border-white/5 shadow-2xl">
+                <div id="difficulty-chart" class="flex flex-col gap-3"></div>
+            </div>
         </div>
-      </div>
 
-      <!-- FORUMS SECTION -->
-      <section id="forums-section" class="container mx-auto p-4 mt-6">
-        <div class="bg-gray-800/60 border border-white/5 rounded-2xl p-6 shadow-lg">
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <h3 class="text-xl font-bold">Forums Chat</h3>
-              <p class="text-sm text-gray-400">Foros - Chat (esta sección no se traduce automáticamente)</p>
-            </div>
-            <div class="flex items-center gap-3">
-              <div id="current-user-badge" class="pill small">Guest</div>
-              <div id="current-user-role" class="role-badge text-xs text-gray-200 hidden"></div>
-              <button id="apply-button-header" class="pill text-sm" onclick="openApplyModal()">Apply for Server Developer</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="md:col-span-2 flex flex-col gap-3">
-              <div id="forum-messages" class="flex flex-col gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-2 rounded-lg chat-box"></div>
-
-              <div class="flex gap-2 mt-2">
-                <input id="forum-input" placeholder="Write a message..." class="flex-grow px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5 focus:outline-none" />
-                <button id="send-btn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500">Send</button>
-              </div>
-              <p id="forum-note" class="text-xs text-gray-400 mt-1">Choose a name and a small password in the login/register modal to post messages.</p>
-            </div>
-
-            <div id="side-panel" class="flex flex-col gap-3">
-              <div id="quick-login-card" class="bg-gray-800/50 rounded-xl p-3 border border-white/5">
-                <h4 class="font-bold">Quick Login</h4>
-                <p class="text-sm text-gray-400">Use the top-right icon to login/register.</p>
-                <div class="flex gap-2 mt-2">
-                  <button class="pill" onclick="openLoginModal()">Login / Register</button>
-                  <button class="pill" onclick="openApplyModal()">Apply</button>
+        <!-- FORUMS SECTION -->
+        <section id="forums-section" class="container mx-auto p-4 mt-6">
+            <div class="bg-gray-800/60 border border-white/5 rounded-2xl p-6 shadow-lg">
+                <div class="flex items-center justify-between mb-4">
+                    <div>
+                        <h3 class="text-xl font-bold">Forums Chat</h3>
+                        <p class="text-sm text-gray-400">Foros - Chat (esta sección no se traduce automáticamente)</p>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div id="current-user-badge" class="pill small">Guest</div>
+                        <div id="current-user-role" class="role-badge text-xs text-gray-200 hidden"></div>
+                        <button id="apply-button-header" class="pill text-sm" onclick="openApplyModal()">Apply for Server Developer</button>
+                    </div>
                 </div>
-              </div>
 
-              <!-- Hiring Panel -->
-              <div id="hiring-panel" class="bg-gray-800/50 rounded-xl p-3 border border-white/5 flex flex-col gap-3">
-                <div class="flex items-center justify-between">
-                  <h4 class="font-bold">Hiring Board</h4>
-                  <div class="text-xs text-gray-400">Payments happen outside this website</div>
-                </div>
-                <div id="hiring-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto custom-scrollbar"></div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2 flex flex-col gap-3">
+                        <div id="forum-messages" class="flex flex-col gap-2 max-h-[360px] overflow-y-auto custom-scrollbar p-2 rounded-lg chat-box"></div>
 
-                <div class="flex gap-2">
-                  <button id="create-hiring-btn" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500">Create Hiring Post</button>
+                        <div class="flex gap-2 mt-2">
+                            <input id="forum-input" placeholder="Write a message..." class="flex-grow px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5 focus:outline-none" />
+                            <button id="send-btn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500">Send</button>
+                        </div>
+                        <p id="forum-note" class="text-xs text-gray-400 mt-1">Choose a name and a small password in the login/register modal to post messages.</p>
+                    </div>
+
+                    <div id="side-panel" class="flex flex-col gap-3">
+                        <div id="quick-login-card" class="bg-gray-800/50 rounded-xl p-3 border border-white/5">
+                            <h4 class="font-bold">Quick Login</h4>
+                            <p class="text-sm text-gray-400">Use the top-right icon to login/register.</p>
+                            <div class="flex gap-2 mt-2">
+                                <button class="pill" onclick="openLoginModal()">Login / Register</button>
+                                <button class="pill" onclick="openApplyModal()">Apply</button>
+                            </div>
+                        </div>
+
+                        <!-- Hiring Panel -->
+                        <div id="hiring-panel" class="bg-gray-800/50 rounded-xl p-3 border border-white/5 flex flex-col gap-3">
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold">Hiring Board</h4>
+                                <div class="text-xs text-gray-400">Payments happen outside this website</div>
+                            </div>
+                            <div id="hiring-list" class="flex flex-col gap-2 max-h-48 overflow-y-auto custom-scrollbar"></div>
+
+                            <div class="flex gap-2">
+                                <button id="create-hiring-btn" class="w-full py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500">Create Hiring Post</button>
+                            </div>
+                            <p class="text-xs text-gray-400">NOTE: Fraud at hiring part will be punished.</p>
+                        </div>
+                    </div>
                 </div>
-                <p class="text-xs text-gray-400">NOTE: Fraud at hiring part will be punished.</p>
-              </div>
+
             </div>
-          </div>
-
-        </div>
-      </section>
+        </section>
 
     </main>
-  </div>
+</div>
 
-  <!-- Modals (full app) -->
-  <div id="versions-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+<!-- MODALS -->
+<!-- Versions Modal -->
+<div id="versions-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="versions-card">
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <h2 id="v-title" class="text-2xl font-bold">Versiones y Forks de Servidor</h2>
-          <p class="text-sm text-gray-400">APIs y Motores principales de la comunidad.</p>
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <h2 id="v-title" class="text-2xl font-bold">Versiones y Forks de Servidor</h2>
+                <p class="text-sm text-gray-400">APIs y Motores principales de la comunidad.</p>
+            </div>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
         </div>
-        <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
 
-      <div class="overflow-auto max-h-[60vh] custom-scrollbar">
-        <table class="min-w-full text-sm">
-          <thead class="sticky top-0 bg-gray-700/70">
-            <tr class="text-left text-xs text-gray-300 uppercase">
-              <th class="p-3">Nombre</th><th class="p-3 hidden sm:table-cell">Tipo</th><th class="p-3 hidden lg:table-cell">Año</th><th class="p-3">Uso Principal</th><th class="p-3 hidden md:table-cell">Curiosidad</th>
-            </tr>
-          </thead>
-          <tbody id="versions-tbody" class="divide-y divide-white/5"></tbody>
-        </table>
-      </div>
+        <div class="overflow-auto max-h-[60vh] custom-scrollbar">
+            <table class="min-w-full text-sm">
+                <thead class="sticky top-0 bg-gray-700/70">
+                    <tr class="text-left text-xs text-gray-300 uppercase">
+                        <th class="p-3">Nombre</th><th class="p-3 hidden sm:table-cell">Tipo</th><th class="p-3 hidden lg:table-cell">Año</th><th class="p-3">Uso Principal</th><th class="p-3 hidden md:table-cell">Curiosidad</th>
+                    </tr>
+                </thead>
+                <tbody id="versions-tbody" class="divide-y divide-white/5"></tbody>
+            </table>
+        </div>
     </div>
-  </div>
+</div>
 
-  <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+<!-- Detail Modal -->
+<div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-3xl p-6 max-w-2xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="detail-card">
-      <div class="flex justify-between items-start mb-4">
-        <div>
-          <span id="m-level" class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1 block">Nivel 1</span>
-          <h2 id="m-title" class="text-2xl font-bold text-white">.yml</h2>
-          <p id="m-ext" class="text-gray-400 font-mono text-sm mt-1">YAML Configuration</p>
+        <div class="flex justify-between items-start mb-4">
+            <div>
+                <span id="m-level" class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1 block">Nivel 1</span>
+                <h2 id="m-title" class="text-2xl font-bold text-white">.yml</h2>
+                <p id="m-ext" class="text-gray-400 font-mono text-sm mt-1">YAML Configuration</p>
+            </div>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
-        <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <h3 id="lbl-whatis" class="text-xs text-gray-500 uppercase font-bold mb-2">Qué es</h3>
-          <p id="m-whatis" class="text-gray-200 text-sm">Descripción...</p>
+        <div class="space-y-4">
+            <div>
+                <h3 id="lbl-whatis" class="text-xs text-gray-500 uppercase font-bold mb-2">Qué es</h3>
+                <p id="m-whatis" class="text-gray-200 text-sm">Descripción...</p>
+            </div>
+            <div>
+                <h3 id="lbl-whatdo" class="text-xs text-gray-500 uppercase font-bold mb-2">Qué haces</h3>
+                <p id="m-whatdo" class="text-gray-200 text-sm">Acción...</p>
+            </div>
+            <div>
+                <div class="flex justify-between items-end mb-2">
+                    <h3 id="lbl-prog" class="text-xs text-gray-500 uppercase font-bold">Nivel de Programación</h3>
+                    <span id="m-prog-val" class="text-sm font-bold text-indigo-400">Bajo</span>
+                </div>
+                <div class="h-3 w-full bg-gray-700/50 rounded-full overflow-hidden">
+                    <div id="m-bar" class="h-full bg-indigo-500 rounded-full w-0"></div>
+                </div>
+            </div>
         </div>
-        <div>
-          <h3 id="lbl-whatdo" class="text-xs text-gray-500 uppercase font-bold mb-2">Qué haces</h3>
-          <p id="m-whatdo" class="text-gray-200 text-sm">Acción...</p>
-        </div>
-        <div>
-          <div class="flex justify-between items-end mb-2">
-            <h3 id="lbl-prog" class="text-xs text-gray-500 uppercase font-bold">Nivel de Programación</h3>
-            <span id="m-prog-val" class="text-sm font-bold text-indigo-400">Bajo</span>
-          </div>
-          <div class="h-3 w-full bg-gray-700/50 rounded-full overflow-hidden">
-            <div id="m-bar" class="h-full bg-indigo-500 rounded-full w-0"></div>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
+</div>
 
-  <div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+<!-- Settings Modal (includes favicon upload and change-password when logged in) -->
+<div id="settings-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0"></div>
     <div class="bg-gray-800/90 backdrop-blur-xl border border-white/10 rounded-2xl p-6 w-96 shadow-2xl transform scale-95 smooth-transition" id="settings-card">
-      <h3 id="st-title" class="text-xl font-bold mb-4 text-center">Ajustes / Settings</h3>
-      <div class="space-y-3">
-        <button onclick="changeLang('es')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 transition-all group">
-          <span class="font-medium">Español</span> <span id="check-es" class="opacity-100 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
-        </button>
-        <button onclick="changeLang('en')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 transition-all group">
-          <span class="font-medium">English</span> <span id="check-en" class="opacity-0 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
-        </button>
+        <h3 id="st-title" class="text-xl font-bold mb-4 text-center">Ajustes / Settings</h3>
+        <div class="space-y-3">
+            <button onclick="changeLang('es')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 transition-all group">
+                <span class="font-medium">Español</span> <span id="check-es" class="opacity-100 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
+            </button>
+            <button onclick="changeLang('en')" class="w-full py-3 px-4 rounded-xl flex items-center justify-between bg-white/5 hover:bg-indigo-600/20 border border-white/5 transition-all group">
+                <span class="font-medium">English</span> <span id="check-en" class="opacity-0 text-indigo-400"><i data-lucide="check" class="w-4 h-4"></i></span>
+            </button>
 
-        <div class="pt-4 border-t border-white/5">
-          <h4 class="font-bold">Appearance</h4>
-          <p class="text-xs text-gray-400">Upload an image to use as the site favicon (stored in localStorage).</p>
-          <div class="flex items-center gap-2 mt-2">
-            <input id="favicon-input" type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" class="text-sm" />
-            <button class="pill" onclick="applyFaviconFromInput()">Set</button>
-            <button class="pill text-red-400" onclick="removeFavicon()">Remove</button>
-          </div>
-          <div id="favicon-preview" class="mt-3"></div>
-        </div>
-
-        <div id="account-section" class="pt-4 border-t border-white/5 hidden">
-          <h4 class="font-bold">Account</h4>
-          <div class="space-y-2 mt-2">
-            <div class="text-sm">Change password</div>
-            <input id="old-pass" type="password" placeholder="Current password" class="w-full px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
-            <input id="new-pass" type="password" placeholder="New password" class="w-full px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
-            <div class="flex gap-2">
-              <button id="change-pass-btn" class="w-full py-2 rounded-xl bg-indigo-600" onclick="changePassword()">Change Password</button>
-              <button id="logout-btn" class="w-full py-2 rounded-xl bg-red-600" onclick="logout()">Logout</button>
+            <!-- Favicon uploader added here -->
+            <div class="pt-4 border-t border-white/5">
+                <h4 class="font-bold">Appearance</h4>
+                <p class="text-xs text-gray-400">Upload an image to use as the site favicon (stored in localStorage).</p>
+                <div class="flex items-center gap-2 mt-2">
+                    <input id="favicon-input" type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" class="text-sm" />
+                    <button class="pill" onclick="applyFaviconFromInput()">Set</button>
+                    <button class="pill text-red-400" onclick="removeFavicon()">Remove</button>
+                </div>
+                <div id="favicon-preview" class="mt-3"></div>
             </div>
-          </div>
+
+            <div id="account-section" class="pt-4 border-t border-white/5 hidden">
+                <h4 class="font-bold">Account</h4>
+                <div class="space-y-2 mt-2">
+                    <div class="text-sm">Change password</div>
+                    <input id="old-pass" type="password" placeholder="Current password" class="w-full px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+                    <input id="new-pass" type="password" placeholder="New password" class="w-full px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+                    <div class="flex gap-2">
+                        <button id="change-pass-btn" class="w-full py-2 rounded-xl bg-indigo-600" onclick="changePassword()">Change Password</button>
+                        <button id="logout-btn" class="w-full py-2 rounded-xl bg-red-600" onclick="logout()">Logout</button>
+                    </div>
+                </div>
+            </div>
         </div>
-
-      </div>
     </div>
-  </div>
+</div>
 
-  <div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+<!-- Login/Register Modal -->
+<div id="login-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
     <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-md w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="login-card">
-      <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold">Login / Register</h3>
-        <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
-      </div>
-
-      <div class="space-y-3">
-        <input id="login-name" placeholder="Choose a name (e.g. alice)" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
-        <input id="login-pass" placeholder="Tiny password" type="password" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
-        <div class="flex gap-2">
-          <button class="w-1/2 py-2 rounded-xl bg-indigo-600" onclick="registerUser()">Register</button>
-          <button class="w-1/2 py-2 rounded-xl bg-emerald-600" onclick="loginUser()">Login</button>
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Login / Register</h3>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
-        <p class="text-xs text-gray-400">Create an account to post, DM others and apply. Admin accounts are assigned by existing admins only.</p>
-      </div>
-    </div>
-  </div>
 
-  <!-- apply/applications/hiring/dms modals are the same and included above in previous versions -->
-  <!-- create-hiring-modal, hiring-chat-modal, dms-modal, applications-modal are included earlier in the file -->
+        <div class="space-y-3">
+            <input id="login-name" placeholder="Choose a name (e.g. alice)" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <input id="login-pass" placeholder="Tiny password" type="password" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <div class="flex gap-2">
+                <button class="w-1/2 py-2 rounded-xl bg-indigo-600" onclick="registerUser()">Register</button>
+                <button class="w-1/2 py-2 rounded-xl bg-emerald-600" onclick="loginUser()">Login</button>
+            </div>
+            <p class="text-xs text-gray-400">Create an account to post, DM others and apply. Admin accounts are assigned by existing admins only.</p>
+        </div>
+    </div>
+</div>
+
+<!-- Apply Modal (asks for Discord handle) -->
+<div id="apply-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="apply-card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Apply for Server Developer</h3>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-3">
+            <p class="text-sm text-gray-300">Applications will be reviewed by admins. Please include your Discord handle so admins can contact you.</p>
+            <input id="apply-discord" placeholder="Discord (e.g. user#1234)" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <textarea id="apply-msg" rows="5" placeholder="Describe your experience & hourly rate..." class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5"></textarea>
+            <div class="flex gap-2">
+                <button class="w-full py-2 rounded-xl bg-indigo-600" onclick="submitApplication()">Submit Application</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Applications Modal (admins only) -->
+<div id="applications-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-3xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="applications-card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Server Developer Applications</h3>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div id="applications-list" class="space-y-2 max-h-[60vh] overflow-y-auto custom-scrollbar"></div>
+    </div>
+</div>
+
+<!-- Create Hiring Modal -->
+<div id="create-hiring-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-6 max-w-lg w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="create-hiring-card">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Create Hiring Post</h3>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+        <div class="space-y-3">
+            <input id="h-title" placeholder="Title (e.g. 'Full server setup')" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <input id="h-price" placeholder="Price (e.g. $50)" class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+            <textarea id="h-desc" rows="4" placeholder="Describe services, skills, what you can do..." class="w-full px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5"></textarea>
+            <div class="flex gap-2">
+                <button class="w-full py-2 rounded-xl bg-emerald-600" onclick="createHiringPost()">Create Post</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hiring Chat Modal (Discord-like: left list of posts, right chat) -->
+<div id="hiring-chat-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="hiring-chat-card">
+        <div class="flex justify-between items-center mb-2">
+            <div>
+                <h3 id="hchat-title" class="text-lg font-bold">Hiring Chats</h3>
+                <div id="hchat-sub" class="text-xs text-gray-400">Select a hiring post to chat</div>
+            </div>
+            <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="md:col-span-1 bg-gray-900/10 rounded-lg p-2 max-h-[48vh] overflow-y-auto custom-scrollbar">
+                <div id="hchat-posts-list" class="space-y-2"></div>
+            </div>
+
+            <div class="md:col-span-3 flex flex-col">
+                <div id="hchat-messages" class="chat-box mb-2 p-2 rounded-lg bg-gray-900/20 custom-scrollbar flex-1"></div>
+                <div class="flex gap-2">
+                    <input id="hchat-input" placeholder="Message..." class="flex-grow px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+                    <button class="px-4 py-2 rounded-xl bg-indigo-600" onclick="sendHiringChat()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DMs Modal (Discord-like: left list of conversations, right messages) -->
+<div id="dms-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
+    <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="dms-card">
+        <div class="flex justify-between items-center mb-2">
+            <h3 class="text-lg font-bold">Direct Messages</h3>
+            <div class="flex items-center gap-2">
+                <input id="new-dm-user" placeholder="username to DM" class="px-3 py-1 rounded-xl bg-gray-800/40 border border-white/5" />
+                <button class="pill" onclick="startDM()">Open</button>
+                <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="md:col-span-1 bg-gray-900/10 rounded-lg p-2 max-h-[56vh] overflow-y-auto custom-scrollbar">
+                <div id="dm-conversations" class="space-y-2"></div>
+            </div>
+            <div class="md:col-span-3 flex flex-col">
+                <div id="dm-window" class="flex-1 bg-gray-900/20 rounded-lg p-3 mb-2 chat-box custom-scrollbar"></div>
+                <div class="flex gap-2">
+                    <input id="dm-input" placeholder="Write DM..." class="flex-grow px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+                    <button class="px-4 py-2 rounded-xl bg-indigo-600" onclick="sendDM()">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
-/* =================================================================
-   Full client-side single-file app.
-   This version ensures:
-   - All UI pieces are initialized and wired.
-   - Full serverVersions list restored.
-   - Favicon uploader works and persists (localStorage).
-   - Modals open/close and actions work.
-   - Sample data seeded so the page shows info on first load.
-   ================================================================= */
-
+/* ==========================
+   Storage keys & init data
+   ========================== */
 let currentLang = localStorage.getItem('lang') || 'es';
 let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 let users = JSON.parse(localStorage.getItem('users') || 'null');
-let messages = JSON.parse(localStorage.getItem('messages') || 'null');
+let messages = JSON.parse(localStorage.getItem('messages') || 'null'); // public forum messages
 let hiringPosts = JSON.parse(localStorage.getItem('hiringPosts') || 'null');
-let hiringChats = JSON.parse(localStorage.getItem('hiringChats') || 'null');
+let hiringChats = JSON.parse(localStorage.getItem('hiringChats') || 'null'); // {postId: [{sender,text,ts}]}
 let applications = JSON.parse(localStorage.getItem('applications') || 'null');
-let dms = JSON.parse(localStorage.getItem('dms') || 'null');
+let dms = JSON.parse(localStorage.getItem('dms') || 'null'); // [{id,participants:[a,b],messages:[{sender,text,ts}]}]
 
+// initialize if missing
 if (!users) { users = []; localStorage.setItem('users', JSON.stringify(users)); }
 if (!messages) { messages = []; localStorage.setItem('messages', JSON.stringify(messages)); }
 if (!hiringPosts) { hiringPosts = []; localStorage.setItem('hiringPosts', JSON.stringify(hiringPosts)); }
@@ -288,110 +393,124 @@ if (!hiringChats) { hiringChats = {}; localStorage.setItem('hiringChats', JSON.s
 if (!applications) { applications = []; localStorage.setItem('applications', JSON.stringify(applications)); }
 if (!dms) { dms = []; localStorage.setItem('dms', JSON.stringify(dms)); }
 
+/* ==========================
+   UI helpers
+   ========================== */
+function updateHeaderAndLang(){
+    const subEs = "Niveles de programar de Minecraft. Wiki por Nodropedd_";
+    const subEn = "Levels of programming of Minecraft. Wiki by Nodropedd_";
+    document.getElementById('app-title').textContent = currentLang === 'es' ? "Programación de Servidores" : "Server Programming";
+    document.getElementById('app-subtitle').textContent = currentLang === 'es' ? subEs : subEn;
+    document.getElementById('versions-btn-text').textContent = currentLang === 'es' ? "Ver Versiones Core" : "View Core Versions";
+    document.getElementById('check-es').style.opacity = currentLang === 'es' ? 1 : 0;
+    document.getElementById('check-en').style.opacity = currentLang === 'en' ? 1 : 0;
+}
+
 function saveAll(){
-  localStorage.setItem('users', JSON.stringify(users));
-  localStorage.setItem('messages', JSON.stringify(messages));
-  localStorage.setItem('hiringPosts', JSON.stringify(hiringPosts));
-  localStorage.setItem('hiringChats', JSON.stringify(hiringChats));
-  localStorage.setItem('applications', JSON.stringify(applications));
-  localStorage.setItem('dms', JSON.stringify(dms));
+    localStorage.setItem('users', JSON.stringify(users));
+    localStorage.setItem('messages', JSON.stringify(messages));
+    localStorage.setItem('hiringPosts', JSON.stringify(hiringPosts));
+    localStorage.setItem('hiringChats', JSON.stringify(hiringChats));
+    localStorage.setItem('applications', JSON.stringify(applications));
+    localStorage.setItem('dms', JSON.stringify(dms));
 }
 
-/* Favicon functions */
-function loadFaviconFromStorage(){
-  try {
-    const b64 = localStorage.getItem('site_favicon_base64');
-    const link = document.getElementById('favicon-link');
-    if (b64) {
-      link.href = b64;
-      const preview = document.getElementById('favicon-preview');
-      if (preview) preview.innerHTML = `<img src="${b64}" class="file-preview" alt="favicon preview">`;
-    } else {
-      const fallbackSVG = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect fill='#FDE047' width='64' height='64' rx='8'/><text x='50%' y='54%' font-size='36' text-anchor='middle' fill='#111' font-family='sans-serif'>:)</text></svg>`);
-      link.href = `data:image/svg+xml;utf8,${fallbackSVG}`;
-    }
-  } catch (e) { console.error('favicon load err', e); }
-}
-
-function applyFaviconFromInput(){
-  const input = document.getElementById('favicon-input');
-  if (!input || !input.files || !input.files[0]) return alert('Choose an image file (png/jpg/webp/svg).');
-  const file = input.files[0];
-  const reader = new FileReader();
-  reader.onload = e => {
-    const dataUrl = e.target.result;
-    try {
-      localStorage.setItem('site_favicon_base64', dataUrl);
-      const link = document.getElementById('favicon-link');
-      link.href = dataUrl;
-      document.getElementById('favicon-preview').innerHTML = `<img src="${dataUrl}" class="file-preview" alt="favicon preview">`;
-      alert('Favicon set. Some browsers may require reload to update the tab icon.');
-    } catch (err) {
-      console.error(err);
-      alert('Could not save favicon (storage quota?).');
-    }
-  };
-  reader.readAsDataURL(file);
-}
-
-function removeFavicon(){
-  localStorage.removeItem('site_favicon_base64');
-  loadFaviconFromStorage();
-  const preview = document.getElementById('favicon-preview');
-  if (preview) preview.innerHTML = '';
-  alert('Favicon removed (reverted to default).');
-}
-
-/* Utils */
-function escapeHtml(str){ return String(str).replace(/[&<>"'`]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[s])); }
 function getUser(name){ return users.find(u => u.name === name); }
 function formatRoleDisplay(u){
-  if (!u) return 'Member';
-  const parts = [];
-  if (u.role === 'admin') parts.push('admin');
-  if (u.role === 'server developer' || u.isDeveloper) parts.push('server developer');
-  if (u.role === 'member') parts.push('member');
-  return [...new Set(parts)].join(', ');
-}
-
-/* Header/UI */
-function updateHeaderAndLang(){
-  const subEs = "Niveles de programar de Minecraft. Wiki por Nodropedd_";
-  const subEn = "Levels of programming of Minecraft. Wiki by Nodropedd_";
-  document.getElementById('app-title').textContent = currentLang === 'es' ? "Programación de Servidores" : "Server Programming";
-  document.getElementById('app-subtitle').textContent = currentLang === 'es' ? subEs : subEn;
-  document.getElementById('versions-btn-text').textContent = currentLang === 'es' ? "Ver Versiones Core" : "View Core Versions";
-  document.getElementById('check-es').style.opacity = currentLang === 'es' ? 1 : 0;
-  document.getElementById('check-en').style.opacity = currentLang === 'en' ? 1 : 0;
+    if (!u) return 'Member';
+    const parts = [];
+    if (u.role === 'admin') parts.push('admin');
+    if (u.role === 'server developer') parts.push('server developer');
+    if (u.role === 'member') parts.push('member');
+    // legacy: allow isDeveloper flag
+    if (u.isDeveloper && !parts.includes('server developer')) parts.push('server developer');
+    // ensure uniqueness and order: admin first
+    const unique = [...new Set(parts)];
+    return unique.join(', ');
 }
 
 function refreshUserBadge(){
-  const badge = document.getElementById('current-user-badge');
-  const roleEl = document.getElementById('current-user-role');
-  const appsBtn = document.getElementById('apps-btn');
-  const quickLoginCard = document.getElementById('quick-login-card');
-  const applyHeader = document.getElementById('apply-button-header');
-  if (currentUser) {
-    const u = getUser(currentUser.name);
-    badge.textContent = currentUser.name;
-    roleEl.textContent = formatRoleDisplay(u);
-    roleEl.classList.remove('hidden');
-    if (u && u.role === 'admin') appsBtn.classList.remove('hidden'); else appsBtn.classList.add('hidden');
-    document.getElementById('account-section').classList.remove('hidden');
-    quickLoginCard.classList.add('hidden-el');
-    applyHeader.classList.remove('hidden-el');
-  } else {
-    badge.textContent = 'Guest';
-    roleEl.classList.add('hidden');
-    appsBtn.classList.add('hidden');
-    document.getElementById('account-section').classList.add('hidden');
-    quickLoginCard.classList.remove('hidden-el');
-    applyHeader.classList.remove('hidden-el');
-  }
+    const badge = document.getElementById('current-user-badge');
+    const roleEl = document.getElementById('current-user-role');
+    const appsBtn = document.getElementById('apps-btn');
+    const quickLoginCard = document.getElementById('quick-login-card');
+    const applyHeader = document.getElementById('apply-button-header');
+    if (currentUser) {
+        const u = getUser(currentUser.name);
+        badge.textContent = currentUser.name;
+        roleEl.textContent = formatRoleDisplay(u);
+        roleEl.classList.remove('hidden');
+        // show applications button only for admins
+        if (u && u.role === 'admin') appsBtn.classList.remove('hidden'); else appsBtn.classList.add('hidden');
+        // show account section in settings
+        document.getElementById('account-section').classList.remove('hidden');
+        // hide quick login panel
+        quickLoginCard.classList.add('hidden-el');
+        // update apply visibility: everyone can apply, keep button visible
+        applyHeader.classList.remove('hidden-el');
+    } else {
+        badge.textContent = 'Guest';
+        roleEl.classList.add('hidden');
+        appsBtn.classList.add('hidden');
+        document.getElementById('account-section').classList.add('hidden');
+        quickLoginCard.classList.remove('hidden-el');
+        applyHeader.classList.remove('hidden-el');
+    }
 }
 
-/* Cards & Chart */
-const levels = [ /* same data as before */ 
+/* ==========================
+   Favicon functions (added)
+   ========================== */
+function loadFaviconFromStorage(){
+    try {
+        const b64 = localStorage.getItem('site_favicon_base64');
+        const link = document.getElementById('favicon-link');
+        if (b64) {
+            link.href = b64;
+            const preview = document.getElementById('favicon-preview');
+            if (preview) preview.innerHTML = `<img src="${b64}" class="file-preview" alt="favicon preview">`;
+        } else {
+            // fallback tiny svg
+            const fallbackSVG = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect fill='#7c3aed' width='64' height='64' rx='8'/><text x='50%' y='54%' font-size='32' text-anchor='middle' fill='#fff' font-family='sans-serif'>P</text></svg>`);
+            link.href = `data:image/svg+xml;utf8,${fallbackSVG}`;
+        }
+    } catch (e) { console.error('favicon load err', e); }
+}
+
+function applyFaviconFromInput(){
+    const input = document.getElementById('favicon-input');
+    if (!input || !input.files || !input.files[0]) return alert('Choose an image file (png/jpg/webp/svg).');
+    const file = input.files[0];
+    const reader = new FileReader();
+    reader.onload = e => {
+        const dataUrl = e.target.result;
+        try {
+            localStorage.setItem('site_favicon_base64', dataUrl);
+            const link = document.getElementById('favicon-link');
+            link.href = dataUrl;
+            const preview = document.getElementById('favicon-preview');
+            if (preview) preview.innerHTML = `<img src="${dataUrl}" class="file-preview" alt="favicon preview">`;
+            alert('Favicon set. Reload may be required in some browsers.');
+        } catch (err) {
+            console.error(err);
+            alert('Could not save favicon (storage quota?).');
+        }
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeFavicon(){
+    localStorage.removeItem('site_favicon_base64');
+    loadFaviconFromStorage();
+    const preview = document.getElementById('favicon-preview');
+    if (preview) preview.innerHTML = '';
+    alert('Favicon removed (revert to default).');
+}
+
+/* ==========================
+   Cards & Chart (simplified)
+   ========================== */
+const levels = [
   { id:0,title:"Comandos",ext:"/setblock /execute",barColor:"bg-gray-500",progress:"2%",color:"text-gray-400",whatIs:"El nivel más básico.",whatDo:"Ejecutar comandos." , prog:"Nula."},
   { id:1,title:".yml",ext:"YAML Config",barColor:"bg-emerald-500",progress:"10%",color:"text-emerald-400",whatIs:"YAML configs.",whatDo:"Editar plugins.",prog:"Muy Baja."},
   { id:2,title:".json",ext:"JSON Data",barColor:"bg-teal-500",progress:"20%",color:"text-teal-400",whatIs:"JSON for datapacks.",whatDo:"Crear loot tables.",prog:"Básica."},
@@ -407,493 +526,539 @@ const levels = [ /* same data as before */
 ];
 
 function populateCards(){
-  const grid = document.getElementById('cards-grid');
-  grid.innerHTML = '';
-  levels.forEach(level => {
-    const card = document.createElement('div');
-    card.className = 'p-6 rounded-2xl bg-gray-800/50 border border-white/5 shadow-xl cursor-pointer hover:bg-gray-700/60 smooth-transition flex flex-col justify-between';
-    card.onclick = ()=> openDetailModal(level);
-    card.innerHTML = `
-      <div class="flex items-center justify-between">
-        <span class="text-xs font-bold uppercase tracking-widest ${level.color}">${(currentLang==='es'?'Nivel':'Level')} ${level.id+1}</span>
-        <div class="text-xs font-mono text-gray-400 bg-white/5 px-2 py-1 rounded-full">${level.ext}</div>
-      </div>
-      <div>
-        <h2 class="text-2xl font-extrabold text-white mt-3">${level.title}</h2>
-        <p class="text-gray-300 text-sm mt-1">${level.whatIs}</p>
-      </div>
-      <div class="pt-4 border-t border-white/5">
-        <div class="flex justify-between items-center mb-1">
-          <span class="text-xs text-gray-400 uppercase font-medium">${currentLang==='es'?'COMPLEJIDAD TÉCNICA':'TECHNICAL COMPLEXITY'}</span>
-          <span class="text-sm font-bold ${level.color}">${level.prog}</span>
-        </div>
-        <div class="h-2 w-full bg-gray-700/50 rounded-full overflow-hidden">
-          <div class="h-full ${level.barColor} rounded-full" style="width:${level.progress}"></div>
-        </div>
-      </div>
-    `;
-    grid.appendChild(card);
-  });
+    const grid = document.getElementById('cards-grid');
+    grid.innerHTML = '';
+    levels.forEach(level => {
+        const card = document.createElement('div');
+        card.className = 'p-6 rounded-2xl bg-gray-800/50 border border-white/5 shadow-xl cursor-pointer hover:bg-gray-700/60 smooth-transition flex flex-col justify-between';
+        card.onclick = ()=> openDetailModal(level);
+        card.innerHTML = `
+            <div class="flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-widest ${level.color}">${(currentLang==='es'?'Nivel':'Level')} ${level.id+1}</span>
+                <div class="text-xs font-mono text-gray-400 bg-white/5 px-2 py-1 rounded-full">${level.ext}</div>
+            </div>
+            <div>
+                <h2 class="text-2xl font-extrabold text-white mt-3">${level.title}</h2>
+                <p class="text-gray-300 text-sm mt-1">${level.whatIs}</p>
+            </div>
+            <div class="pt-4 border-t border-white/5">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-xs text-gray-400 uppercase font-medium">${currentLang==='es'?'COMPLEJIDAD TÉCNICA':'TECHNICAL COMPLEXITY'}</span>
+                    <span class="text-sm font-bold ${level.color}">${level.prog}</span>
+                </div>
+                <div class="h-2 w-full bg-gray-700/50 rounded-full overflow-hidden">
+                    <div class="h-full ${level.barColor} rounded-full" style="width:${level.progress}"></div>
+                </div>
+            </div>
+        `;
+        grid.appendChild(card);
+    });
 }
 
 function populateChart(){
-  const chart = document.getElementById('difficulty-chart');
-  chart.innerHTML = '';
-  levels.forEach(level=>{
-    const row = document.createElement('div');
-    row.className='flex items-center gap-4 py-2';
-    row.innerHTML = `
-      <div class="w-28 text-right text-xs font-medium text-gray-400">${level.title}</div>
-      <div class="flex-grow h-4 bg-gray-700/50 rounded-full overflow-hidden border border-white/5">
-        <div class="chart-bar-fill h-full ${level.barColor}" style="width:${level.progress}"></div>
-      </div>
-      <div class="w-10 text-left text-sm font-bold ${level.color}">${level.progress.replace('%','')}</div>
-    `;
-    chart.appendChild(row);
-  });
+    const chart = document.getElementById('difficulty-chart');
+    chart.innerHTML = '';
+    levels.forEach(level=>{
+        const row = document.createElement('div');
+        row.className='flex items-center gap-4 py-2';
+        row.innerHTML = `
+            <div class="w-28 text-right text-xs font-medium text-gray-400">${level.title}</div>
+            <div class="flex-grow h-4 bg-gray-700/50 rounded-full overflow-hidden border border-white/5">
+                <div class="chart-bar-fill h-full ${level.barColor}" style="width:${level.progress}"></div>
+            </div>
+            <div class="w-10 text-left text-sm font-bold ${level.color}">${level.progress.replace('%','')}</div>
+        `;
+        chart.appendChild(row);
+    });
 }
 
-/* Versions list: restored full set */
+/* ==========================
+   Modals (open/close) & Settings toggle
+   ========================== */
+const modalList = [
+    { id: 'versions-modal', cardId: 'versions-card' },
+    { id: 'detail-modal', cardId: 'detail-card' },
+    { id: 'settings-modal', cardId: 'settings-card' },
+    { id: 'login-modal', cardId: 'login-card' },
+    { id: 'apply-modal', cardId: 'apply-card' },
+    { id: 'applications-modal', cardId: 'applications-card' },
+    { id: 'create-hiring-modal', cardId: 'create-hiring-card' },
+    { id: 'hiring-chat-modal', cardId: 'hiring-chat-card' },
+    { id: 'dms-modal', cardId: 'dms-card' }
+];
+
+function openModal(modalId, cardId){
+    document.getElementById('main-canvas').classList.add('blurred');
+    const modal = document.getElementById(modalId);
+    const card = document.getElementById(cardId);
+    if (!modal) return;
+    modal.classList.remove('opacity-0','pointer-events-none');
+    if (card) { card.classList.remove('scale-90','translate-y-4'); card.classList.add('scale-100','translate-y-0'); }
+}
+function closeAll(){
+    document.getElementById('main-canvas').classList.remove('blurred');
+    modalList.forEach(m=>{
+        const modal = document.getElementById(m.id);
+        const card = document.getElementById(m.cardId);
+        if (modal) modal.classList.add('opacity-0','pointer-events-none');
+        if (card) { card.classList.add('scale-90','translate-y-4'); card.classList.remove('scale-100','translate-y-0'); }
+    });
+}
+
+function toggleSettings(){
+    const modal = document.getElementById('settings-modal');
+    if (!modal) return;
+    if (modal.classList.contains('opacity-0')) {
+        openModal('settings-modal','settings-card');
+    } else {
+        closeAll();
+    }
+}
+
+/* ==========================
+   Versions / Detail
+   ========================== */
+function openVersionsModal(){ populateVersionsModal(); openModal('versions-modal','versions-card'); }
+function openDetailModal(level){
+    document.getElementById('m-level').textContent = `${currentLang==='es'?'Nivel':'Level'} ${level.id+1}`;
+    document.getElementById('m-title').textContent = level.title;
+    document.getElementById('m-ext').textContent = level.ext;
+    document.getElementById('m-whatis').textContent = level.whatIs;
+    document.getElementById('m-whatdo').textContent = level.whatDo;
+    document.getElementById('m-prog-val').textContent = level.prog;
+    const bar = document.getElementById('m-bar');
+    bar.style.width = '0%';
+    bar.className = `h-full ${level.barColor} rounded-full transition-all`;
+    setTimeout(()=> bar.style.width = level.progress, 60);
+    openModal('detail-modal','detail-card');
+}
 function populateVersionsModal(){
-  const tbody = document.getElementById('versions-tbody');
-  tbody.innerHTML = '';
-  const serverVersions = [
-    { name: "Bukkit", type: "API", year: 2010, updated: "No (Legado)", purpose: "API original para plugins. Sentó las bases para todos los motores de servidor posteriores.", curiosity: "Su desarrollo cesó en 2014 debido a una disputa legal por derechos de autor (DMCA)." },
-    { name: "Spigot", type: "Core", year: 2012, updated: "Sí", purpose: "Fork de Bukkit optimizado. Mejora el rendimiento y el manejo de paquetes respecto a Bukkit.", curiosity: "El estándar de oro para servidores de Plugins por muchos años. Introduce las herramientas 'timings'." },
-    { name: "Paper", type: "Core", year: 2016, updated: "Sí", purpose: "Fork de Spigot centrado en el rendimiento y la estabilidad. Corrige bugs de Vanilla y añade optimizaciones.", curiosity: "El motor más usado hoy en día para servidores de Plugins de alto rendimiento. Es la base de muchos otros forks." },
-    { name: "Purpur", type: "Core", year: 2020, updated: "Sí", purpose: "Fork de Paper con mayor personalización de Vanilla y optimizaciones adicionales. Ideal para servidores grandes con requisitos específicos de juego.", curiosity: "Incluye cientos de opciones de configuración que permiten afinar el comportamiento del juego, como cambios en el PvP y la detección de exploits." },
-    { name: "Pufferfish", type: "Core", year: 2021, updated: "Sí", purpose: "Fork de Paper. Ofrece optimizaciones aún más agresivas para servidores con gran cantidad de entidades o jugadores.", curiosity: "Se enfoca en reducir el uso de CPU y memoria sin comprometer demasiado la jugabilidad Vanilla." },
-    { name: "BungeeCord", type: "Proxy", year: 2012, updated: "Sí", purpose: "El proxy original, utilizado para redes de servidores. Estable, pero generalmente menos eficiente que Velocity.", curiosity: "Fue desarrollado por SpigotMC y se convirtió en el estándar de facto para las redes de servidores durante casi una década." },
-    { name: "Velocity", type: "Proxy", year: 2018, updated: "Sí", purpose: "Proxy moderno, ligero y eficiente. Utilizado para conectar múltiples servidores de Minecraft en una sola red.", curiosity: "Escrito desde cero para ser multihilo y es el reemplazo recomendado para BungeeCord." },
-    { name: "Forge", type: "Modding", year: 2011, updated: "Sí", purpose: "Plataforma de modding para Java Edition. Permite a los mods modificar el cliente y el servidor a fondo.", curiosity: "El sistema de mods original, popularizado por packs como Tekkit y Feed The Beast (FTB). Dominó durante años." },
-    { name: "Fabric", type: "Modding", year: 2018, updated: "Sí", purpose: "Plataforma de modding ligera y modular. Se actualiza rápidamente a las versiones de Minecraft.", curiosity: "Popular entre desarrolladores por su API minimalista y su velocidad de actualización, ideal para mods pequeños de calidad de vida." },
-    { name: "Quilt", type: "Modding", year: 2022, updated: "Sí", purpose: "Fork de Fabric, enfocado en mayor estabilidad y estándares abiertos para el desarrollo de mods.", curiosity: "Busca mejorar la comunidad y la gobernanza del proyecto Fabric." },
-    { name: "Sponge", type: "API", year: 2014, updated: "Sí", purpose: "API para crear 'Plugins' (que ellos llaman 'Mods') que funcionan tanto en Forge como en Vanilla, ofreciendo una alternativa a Bukkit.", curiosity: "Fue creado como respuesta a la caída de Bukkit, buscando ser una API más moderna e independiente del servidor base." },
-    { name: "Magma", type: "Híbrido", year: 2019, updated: "Sí", purpose: "Motor que permite correr Plugins de Spigot junto con Mods de Forge en el mismo servidor.", curiosity: "Busca la compatibilidad total, aunque a menudo puede tener problemas de estabilidad debido a la complejidad de la integración." },
-    { name: "PocketMine-MP", type: "Bedrock", year: 2013, updated: "Sí", purpose: "Implementación del servidor para Minecraft Bedrock (Pocket Edition) escrita en PHP.", curiosity: "Es uno de los pocos proyectos importantes escritos en PHP en lugar de Java/Kotlin, orientado a dispositivos móviles." }
-  ];
-  serverVersions.forEach(v=>{
-    const tr = document.createElement('tr');
-    tr.className = 'hover:bg-white/3';
-    tr.innerHTML = `<td class="p-3 font-bold">${v.name}</td><td class="p-3 text-gray-300 hidden sm:table-cell">${v.type}</td><td class="p-3 text-gray-400 hidden lg:table-cell">${v.year}</td><td class="p-3 text-gray-200 text-xs">${v.purpose}</td><td class="p-3 text-gray-500 text-xs italic hidden md:table-cell">${v.curiosity}</td>`;
-    tbody.appendChild(tr);
-  });
+    const tbody = document.getElementById('versions-tbody');
+    tbody.innerHTML = '';
+    const serverVersions = [
+        { name: "Bukkit", type: "API", year: 2010, purpose: "API original para plugins.", curiosity: "Desarrollo cesó en 2014." },
+        { name: "Spigot", type: "Core", year: 2012, purpose: "Fork de Bukkit optimizado.", curiosity: "Introdujo 'timings'." },
+        { name: "Paper", type: "Core", year: 2016, purpose: "Fork de Spigot centrado en rendimiento.", curiosity: "Muy usado hoy en día." },
+        { name: "Purpur", type: "Core", year: 2020, purpose: "Fork con más personalización.", curiosity: "Muchas opciones de config." },
+        { name: "Fabric", type: "Modding", year: 2018, purpose: "Plataforma de modding ligera.", curiosity: "Actualizaciones rápidas." },
+        { name: "Velocity", type: "Proxy", year: 2018, purpose: "Proxy moderno y eficiente.", curiosity: "Multihilo y recomendado." }
+    ];
+    serverVersions.forEach(v=>{
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-white/3';
+        tr.innerHTML = `<td class="p-3 font-bold">${v.name}</td><td class="p-3 hidden sm:table-cell">${v.type}</td><td class="p-3 hidden lg:table-cell">${v.year}</td><td class="p-3 text-xs">${v.purpose}</td><td class="p-3 hidden md:table-cell text-xs italic">${v.curiosity}</td>`;
+        tbody.appendChild(tr);
+    });
 }
 
-/* Auth (register/login/logout/change password) */
+/* ==========================
+   Auth (register/login/logout/change password)
+   ========================== */
 function openLoginModal(){ openModal('login-modal','login-card'); }
 function registerUser(){
-  const name = (document.getElementById('login-name').value || '').trim();
-  const pass = (document.getElementById('login-pass').value || '').trim();
-  if (!name || !pass) return alert('Provide name and tiny password.');
-  if (getUser(name)) return alert('User exists - please login or choose another name.');
-  const usr = { name, pass, role: 'member', postsThisMonth: 0, lastReset: Date.now(), friends: [], isDeveloper: false };
-  users.push(usr); saveAll();
-  currentUser = { name: usr.name, role: usr.role };
-  localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  refreshUserBadge(); closeAll();
-  renderMessages(); renderHiring();
-  alert('Registered and logged in as ' + usr.name);
+    const name = (document.getElementById('login-name').value || '').trim();
+    const pass = (document.getElementById('login-pass').value || '').trim();
+    if (!name || !pass) return alert('Provide name and tiny password.');
+    if (getUser(name)) return alert('User exists - please login or choose another name.');
+    const usr = { name, pass, role: 'member', postsThisMonth: 0, lastReset: Date.now(), friends: [], isDeveloper: false };
+    users.push(usr); saveAll();
+    currentUser = { name: usr.name, role: usr.role };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    refreshUserBadge(); closeAll();
+    alert('Registered and logged in as ' + usr.name);
 }
 function loginUser(){
-  const name = (document.getElementById('login-name').value || '').trim();
-  const pass = (document.getElementById('login-pass').value || '').trim();
-  const u = getUser(name);
-  if (!u || u.pass !== pass) return alert('Invalid credentials.');
-  currentUser = { name: u.name, role: u.role };
-  localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  refreshUserBadge(); closeAll();
-  renderMessages(); renderHiring();
-  alert('Welcome back, ' + u.name);
+    const name = (document.getElementById('login-name').value || '').trim();
+    const pass = (document.getElementById('login-pass').value || '').trim();
+    const u = getUser(name);
+    if (!u || u.pass !== pass) return alert('Invalid credentials.');
+    currentUser = { name: u.name, role: u.role };
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    refreshUserBadge(); closeAll();
+    alert('Welcome back, ' + u.name);
 }
 function logout(){
-  currentUser = null;
-  localStorage.removeItem('currentUser');
-  refreshUserBadge();
-  closeAll();
-  alert('Logged out.');
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    refreshUserBadge();
+    closeAll();
+    alert('Logged out.');
 }
 function changePassword(){
-  if (!currentUser) return alert('Login first.');
-  const oldPass = (document.getElementById('old-pass').value || '').trim();
-  const newPass = (document.getElementById('new-pass').value || '').trim();
-  if (!oldPass || !newPass) return alert('Fill both fields.');
-  const u = getUser(currentUser.name);
-  if (!u) return alert('User record missing.');
-  if (u.pass !== oldPass) return alert('Current password is incorrect.');
-  u.pass = newPass; saveAll();
-  document.getElementById('old-pass').value = ''; document.getElementById('new-pass').value = '';
-  alert('Password changed.');
+    if (!currentUser) return alert('Login first.');
+    const oldPass = (document.getElementById('old-pass').value || '').trim();
+    const newPass = (document.getElementById('new-pass').value || '').trim();
+    if (!oldPass || !newPass) return alert('Fill both fields.');
+    const u = getUser(currentUser.name);
+    if (!u) return alert('User record missing.');
+    if (u.pass !== oldPass) return alert('Current password is incorrect.');
+    u.pass = newPass; saveAll();
+    document.getElementById('old-pass').value = ''; document.getElementById('new-pass').value = '';
+    alert('Password changed.');
 }
 
-/* Forum messages */
+/* ==========================
+   Forum messages (public)
+   ========================== */
+function escapeHtml(str){ return String(str).replace(/[&<>"'`]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;','`':'&#96;'}[s])); }
+
 function renderMessages(){
-  const container = document.getElementById('forum-messages');
-  container.innerHTML = '';
-  messages.forEach(m=>{
-    const el = document.createElement('div');
-    el.className = 'msg flex items-start gap-3';
-    if (m.role === 'admin') el.classList.add('msg-admin');
-    el.innerHTML = `
-      <div class="w-10 flex flex-col items-center">
-        <div class="text-lg">${m.role === 'admin' ? '👑' : '🙂'}</div>
-        <div class="text-xs text-gray-400">${new Date(m.ts).toLocaleTimeString()}</div>
-      </div>
-      <div class="flex-1">
-        <div class="flex items-center justify-between gap-2">
-          <div>
-            <strong class="clickable" onclick="openDMFromUser('${m.user}')">${escapeHtml(m.user)}</strong>
-            <span class="text-xs text-gray-400 ml-2">${escapeHtml(m.role || 'Member')}</span>
-          </div>
-          <div class="flex items-center gap-2">
-            ${currentUser && (getUser(currentUser.name).role === 'admin' || m.user === currentUser.name) ? `<button class="text-xs text-red-400" onclick="removeMessage('${m.id}')">Remove</button>` : ''}
-            ${currentUser && currentUser.name !== m.user ? `<button class="text-xs text-indigo-300" onclick="addFriendFromMsg('${m.user}')">Add Friend</button>` : ''}
-          </div>
-        </div>
-        <div class="mt-1 text-sm">${escapeHtml(m.text)}</div>
-      </div>
-    `;
-    container.appendChild(el);
-  });
-  container.scrollTop = container.scrollHeight;
+    const container = document.getElementById('forum-messages');
+    container.innerHTML = '';
+    messages.forEach(m=>{
+        const el = document.createElement('div');
+        el.className = 'msg flex items-start gap-3';
+        if (m.role === 'admin') el.classList.add('msg-admin');
+        el.innerHTML = `
+            <div class="w-10 flex flex-col items-center">
+                <div class="text-lg">${m.role === 'admin' ? '👑' : '🙂'}</div>
+                <div class="text-xs text-gray-400">${new Date(m.ts).toLocaleTimeString()}</div>
+            </div>
+            <div class="flex-1">
+                <div class="flex items-center justify-between gap-2">
+                    <div>
+                        <strong class="clickable" onclick="openDMFromUser('${m.user}')">${escapeHtml(m.user)}</strong>
+                        <span class="text-xs text-gray-400 ml-2">${escapeHtml(m.role || 'Member')}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${currentUser && (getUser(currentUser.name).role === 'admin' || m.user === currentUser.name) ? `<button class="text-xs text-red-400" onclick="removeMessage('${m.id}')">Remove</button>` : ''}
+                        ${currentUser && currentUser.name !== m.user ? `<button class="text-xs text-indigo-300" onclick="addFriendFromMsg('${m.user}')">Add Friend</button>` : ''}
+                    </div>
+                </div>
+                <div class="mt-1 text-sm">${escapeHtml(m.text)}</div>
+            </div>
+        `;
+        container.appendChild(el);
+    });
+    container.scrollTop = container.scrollHeight;
 }
 function sendMessage(){
-  const txt = (document.getElementById('forum-input').value || '').trim();
-  if (!txt) return;
-  if (!currentUser) return alert('Please login/register first (top-right icon).');
-  const id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
-  const userRecord = getUser(currentUser.name);
-  const msg = { id, user: currentUser.name, role: userRecord?.role || 'member', text: txt, ts: Date.now() };
-  messages.push(msg); saveAll(); renderMessages();
-  document.getElementById('forum-input').value = '';
+    const txt = (document.getElementById('forum-input').value || '').trim();
+    if (!txt) return;
+    if (!currentUser) return alert('Please login/register first (top-right icon).');
+    const id = 'm_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
+    const userRecord = getUser(currentUser.name);
+    const msg = { id, user: currentUser.name, role: userRecord?.role || 'member', text: txt, ts: Date.now() };
+    messages.push(msg); saveAll(); renderMessages();
+    document.getElementById('forum-input').value = '';
+}
+function removeMessage(id){
+    if (!currentUser) return alert('Not allowed.');
+    const idx = messages.findIndex(m=>m.id===id); if (idx===-1) return;
+    const urec = getUser(currentUser.name);
+    if (urec && (urec.role === 'admin' || messages[idx].user === currentUser.name)) {
+        messages.splice(idx,1); saveAll(); renderMessages();
+    } else alert('Not permitted.');
 }
 
-/* Friends & DMs */
+/* ==========================
+   Friend & DM helpers (Discord-like)
+   ========================== */
 function addFriendFromMsg(username){
-  if (!currentUser) return alert('Login to add friends.');
-  const u = getUser(currentUser.name);
-  if (!u) return alert('User record missing.');
-  u.friends = u.friends || [];
-  if (u.friends.includes(username)) return alert('Already friend.');
-  u.friends.push(username); saveAll(); alert(username + ' added to friends.');
+    if (!currentUser) return alert('Login to add friends.');
+    const u = getUser(currentUser.name);
+    if (!u) return alert('User record missing.');
+    u.friends = u.friends || [];
+    if (u.friends.includes(username)) return alert('Already friend.');
+    u.friends.push(username); saveAll(); alert(username + ' added to friends.');
 }
 
 function openDMModal(){ openModal('dms-modal','dms-card'); renderDMConversations(); }
 function openDMFromUser(username){
-  if (!currentUser) return alert('Login to DM.');
-  startDMWith(username);
+    if (!currentUser) return alert('Login to DM.');
+    // auto-create or open conversation, like Discord: select on left and show right
+    startDMWith(username);
 }
 function startDM(){
-  const name = (document.getElementById('new-dm-user').value || '').trim();
-  if (!name) return alert('Enter username to DM.');
-  startDMWith(name);
+    const name = (document.getElementById('new-dm-user').value || '').trim();
+    if (!name) return alert('Enter username to DM.');
+    startDMWith(name);
 }
 function startDMWith(name){
-  if (!currentUser) return alert('Login to DM.');
-  if (!getUser(name)) return alert('User not found.');
-  let convo = dms.find(c => c.participants.includes(currentUser.name) && c.participants.includes(name));
-  if (!convo) {
-    convo = { id: 'dm_' + Date.now() + '_' + Math.random().toString(36,6), participants: [currentUser.name, name], messages: [] };
-    dms.push(convo); saveAll();
-  }
-  openModal('dms-modal','dms-card');
-  renderDMConversations(convo.id);
-  renderDMWindow(convo.id);
+    if (!currentUser) return alert('Login to DM.');
+    if (!getUser(name)) return alert('User not found.');
+    // find or create conversation
+    let convo = dms.find(c => c.participants.includes(currentUser.name) && c.participants.includes(name));
+    if (!convo) {
+        convo = { id: 'dm_' + Date.now() + '_' + Math.random().toString(36,6), participants: [currentUser.name, name], messages: [] };
+        dms.push(convo); saveAll();
+    }
+    openModal('dms-modal','dms-card');
+    renderDMConversations(convo.id);
+    renderDMWindow(convo.id);
 }
 function renderDMConversations(selectedId){
-  const container = document.getElementById('dm-conversations');
-  container.innerHTML = '';
-  const myConvos = dms.filter(c => c.participants.includes(currentUser ? currentUser.name : ''))
-                      .sort((a,b)=> {
-                        const la = a.messages.length ? a.messages[a.messages.length-1].ts : 0;
-                        const lb = b.messages.length ? b.messages[b.messages.length-1].ts : 0;
-                        return lb - la;
-                      });
-  myConvos.forEach(c=>{
-    const other = c.participants.find(p => p !== currentUser.name);
-    const last = c.messages.length ? c.messages[c.messages.length-1].text.slice(0,40) : 'No messages';
-    const el = document.createElement('div');
-    el.className = 'p-2 rounded-lg clickable hover:bg-white/5';
-    if (c.id === selectedId) el.classList.add('selected');
-    el.innerHTML = `<div class="font-bold">${escapeHtml(other)}</div><div class="text-xs text-gray-400">${escapeHtml(last)}</div>`;
-    el.onclick = ()=> { renderDMWindow(c.id); renderDMConversations(c.id); };
-    container.appendChild(el);
-  });
-  const u = getUser(currentUser ? currentUser.name : '');
-  if (u && u.friends && u.friends.length) {
-    const friendsHeader = document.createElement('div'); friendsHeader.className='text-xs text-gray-400 mt-2'; friendsHeader.textContent='Friends';
-    container.appendChild(friendsHeader);
-    u.friends.forEach(f=>{
-      const el = document.createElement('div');
-      el.className='p-2 rounded-lg clickable hover:bg-white/5';
-      el.innerHTML = `<div>${escapeHtml(f)}</div>`;
-      el.onclick = ()=> startDMWith(f);
-      container.appendChild(el);
+    const container = document.getElementById('dm-conversations');
+    container.innerHTML = '';
+    // list user's conversations (sorted by last message)
+    const myConvos = dms.filter(c => c.participants.includes(currentUser ? currentUser.name : ''))
+                        .sort((a,b)=> {
+                            const la = a.messages.length ? a.messages[a.messages.length-1].ts : 0;
+                            const lb = b.messages.length ? b.messages[b.messages.length-1].ts : 0;
+                            return lb - la;
+                        });
+    myConvos.forEach(c=>{
+        const other = c.participants.find(p => p !== currentUser.name);
+        const last = c.messages.length ? c.messages[c.messages.length-1].text.slice(0,40) : 'No messages';
+        const el = document.createElement('div');
+        el.className = 'p-2 rounded-lg clickable hover:bg-white/5';
+        if (c.id === selectedId) el.classList.add('selected');
+        el.innerHTML = `<div class="font-bold">${escapeHtml(other)}</div><div class="text-xs text-gray-400">${escapeHtml(last)}</div>`;
+        el.onclick = ()=> { renderDMWindow(c.id); renderDMConversations(c.id); };
+        container.appendChild(el);
     });
-  }
+    // friends fallback
+    const u = getUser(currentUser ? currentUser.name : '');
+    if (u && u.friends && u.friends.length) {
+        const friendsHeader = document.createElement('div'); friendsHeader.className='text-xs text-gray-400 mt-2'; friendsHeader.textContent='Friends';
+        container.appendChild(friendsHeader);
+        u.friends.forEach(f=>{
+            const el = document.createElement('div');
+            el.className='p-2 rounded-lg clickable hover:bg-white/5';
+            el.innerHTML = `<div>${escapeHtml(f)}</div>`;
+            el.onclick = ()=> startDMWith(f);
+            container.appendChild(el);
+        });
+    }
 }
 let activeDMId = null;
 function renderDMWindow(dmId){
-  const win = document.getElementById('dm-window');
-  win.innerHTML = '<div class="text-xs text-gray-400">Loading...</div>';
-  const convo = dms.find(c=>c.id===dmId);
-  if (!convo) { win.innerHTML = '<div class="text-sm text-gray-400">Conversation not found.</div>'; return; }
-  activeDMId = dmId;
-  win.innerHTML = '';
-  convo.messages.forEach(m=>{
-    const row = document.createElement('div');
-    row.className = 'mb-2';
-    row.innerHTML = `<div class="${m.sender === currentUser.name ? 'text-right' : 'text-left'}"><strong>${escapeHtml(m.sender)}</strong> <span class="text-xs text-gray-400">${new Date(m.ts).toLocaleTimeString()}</span></div><div class="mt-1">${escapeHtml(m.text)}</div>`;
-    win.appendChild(row);
-  });
-  win.scrollTop = win.scrollHeight;
+    const win = document.getElementById('dm-window');
+    win.innerHTML = '<div class="text-xs text-gray-400">Loading...</div>';
+    const convo = dms.find(c=>c.id===dmId);
+    if (!convo) { win.innerHTML = '<div class="text-sm text-gray-400">Conversation not found.</div>'; return; }
+    activeDMId = dmId;
+    win.innerHTML = '';
+    convo.messages.forEach(m=>{
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+        row.innerHTML = `<div class="${m.sender === currentUser.name ? 'text-right' : 'text-left'}"><strong>${escapeHtml(m.sender)}</strong> <span class="text-xs text-gray-400">${new Date(m.ts).toLocaleTimeString()}</span></div><div class="mt-1">${escapeHtml(m.text)}</div>`;
+        win.appendChild(row);
+    });
+    win.scrollTop = win.scrollHeight;
 }
 function sendDM(){
-  if (!currentUser) return alert('Login to send DMs.');
-  if (!activeDMId) return alert('Open a conversation first.');
-  const txt = (document.getElementById('dm-input').value || '').trim();
-  if (!txt) return;
-  const convo = dms.find(c=>c.id===activeDMId);
-  if (!convo) return alert('Conversation missing.');
-  convo.messages.push({ sender: currentUser.name, text: txt, ts: Date.now() });
-  saveAll(); renderDMWindow(activeDMId); document.getElementById('dm-input').value = '';
-  renderDMConversations(activeDMId);
+    if (!currentUser) return alert('Login to send DMs.');
+    if (!activeDMId) return alert('Open a conversation first.');
+    const txt = (document.getElementById('dm-input').value || '').trim();
+    if (!txt) return;
+    const convo = dms.find(c=>c.id===activeDMId);
+    if (!convo) return alert('Conversation missing.');
+    convo.messages.push({ sender: currentUser.name, text: txt, ts: Date.now() });
+    saveAll(); renderDMWindow(activeDMId); document.getElementById('dm-input').value = '';
+    renderDMConversations(activeDMId);
 }
 
-/* Hiring posts and chats (no mirroring) */
+/* ==========================
+   Hiring posts & per-post chats (Discord-like)
+   ========================== */
 function renderHiring(){
-  const list = document.getElementById('hiring-list');
-  list.innerHTML = '';
-  hiringPosts.forEach(p=>{
-    const el = document.createElement('div');
-    el.className = 'bg-gray-900/30 p-3 rounded-lg border border-white/5';
-    el.innerHTML = `
-      <div class="flex justify-between items-start">
-        <div>
-          <div class="font-bold">${escapeHtml(p.title)}</div>
-          <div class="text-xs text-gray-400">${escapeHtml(p.desc)}</div>
-          <div class="text-xs text-gray-300 mt-1">By: <strong>${escapeHtml(p.owner)}</strong> — <span class="text-emerald-400">${escapeHtml(p.price)}</span></div>
-        </div>
-        <div class="flex flex-col gap-2">
-          <button class="pill text-sm" onclick="openHiringChat('${p.id}')">Open Chat</button>
-          ${currentUser && (getUser(currentUser.name).role === 'admin' || currentUser.name === p.owner) ? `<button class="pill text-sm text-red-400" onclick="removeHiring('${p.id}')">Remove</button>` : ''}
-        </div>
-      </div>
-    `;
-    list.appendChild(el);
-  });
+    const list = document.getElementById('hiring-list');
+    list.innerHTML = '';
+    hiringPosts.forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'bg-gray-900/30 p-3 rounded-lg border border-white/5';
+        el.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div>
+                    <div class="font-bold">${escapeHtml(p.title)}</div>
+                    <div class="text-xs text-gray-400">${escapeHtml(p.desc)}</div>
+                    <div class="text-xs text-gray-300 mt-1">By: <strong>${escapeHtml(p.owner)}</strong> — <span class="text-emerald-400">${escapeHtml(p.price)}</span></div>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <button class="pill text-sm" onclick="openHiringChat('${p.id}')">Open Chat</button>
+                    ${currentUser && (getUser(currentUser.name).role === 'admin' || currentUser.name === p.owner) ? `<button class="pill text-sm text-red-400" onclick="removeHiring('${p.id}')">Remove</button>` : ''}
+                </div>
+            </div>
+        `;
+        list.appendChild(el);
+    });
 }
 let currentHiringChat = null;
 function openHiringChat(postId){
-  const post = hiringPosts.find(p=>p.id===postId);
-  if (!post) return alert('Post not found');
-  openModal('hiring-chat-modal','hiring-chat-card');
-  currentHiringChat = postId;
-  renderHiringPostsList(postId);
-  renderHiringChat(postId);
+    const post = hiringPosts.find(p=>p.id===postId);
+    if (!post) return alert('Post not found');
+    openModal('hiring-chat-modal','hiring-chat-card');
+    currentHiringChat = postId;
+    renderHiringPostsList(postId);
+    renderHiringChat(postId);
 }
 function renderHiringPostsList(selectedId){
-  const container = document.getElementById('hchat-posts-list');
-  if (!container) return;
-  container.innerHTML = '';
-  hiringPosts.forEach(p=>{
-    const el = document.createElement('div');
-    el.className = 'p-2 rounded-lg clickable hover:bg-white/5';
-    if (p.id === selectedId) el.classList.add('selected');
-    el.innerHTML = `<div class="font-bold">${escapeHtml(p.title)}</div><div class="text-xs text-gray-400">By ${escapeHtml(p.owner)}</div>`;
-    el.onclick = ()=> { currentHiringChat = p.id; renderHiringPostsList(p.id); renderHiringChat(p.id); };
-    container.appendChild(el);
-  });
+    const container = document.getElementById('hchat-posts-list');
+    container.innerHTML = '';
+    hiringPosts.forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'p-2 rounded-lg clickable hover:bg-white/5';
+        if (p.id === selectedId) el.classList.add('selected');
+        el.innerHTML = `<div class="font-bold">${escapeHtml(p.title)}</div><div class="text-xs text-gray-400">By ${escapeHtml(p.owner)}</div>`;
+        el.onclick = ()=> { currentHiringChat = p.id; renderHiringPostsList(p.id); renderHiringChat(p.id); };
+        container.appendChild(el);
+    });
 }
 function renderHiringChat(postId){
-  const box = document.getElementById('hchat-messages');
-  if (!box) return;
-  box.innerHTML = '';
-  const chat = hiringChats[postId] || [];
-  const post = hiringPosts.find(p=>p.id===postId);
-  if (post) {
-    document.getElementById('hchat-title').textContent = `Chat: ${post.title}`;
-    document.getElementById('hchat-sub').textContent = `Owner: ${post.owner} — Price: ${post.price}`;
-  } else {
-    document.getElementById('hchat-title').textContent = `Chat`;
-    document.getElementById('hchat-sub').textContent = `Select a hiring post`;
-  }
-  chat.forEach(m=>{
-    const row = document.createElement('div');
-    row.className = 'mb-2';
-    row.innerHTML = `<div class="text-xs text-gray-400">${escapeHtml(m.sender)} • ${new Date(m.ts).toLocaleTimeString()}</div><div>${escapeHtml(m.text)}</div>`;
-    box.appendChild(row);
-  });
-  box.scrollTop = box.scrollHeight;
+    const box = document.getElementById('hchat-messages');
+    box.innerHTML = '';
+    const chat = hiringChats[postId] || [];
+    const post = hiringPosts.find(p=>p.id===postId);
+    if (post) {
+        document.getElementById('hchat-title').textContent = `Chat: ${post.title}`;
+        document.getElementById('hchat-sub').textContent = `Owner: ${post.owner} — Price: ${post.price}`;
+    } else {
+        document.getElementById('hchat-title').textContent = `Chat`;
+        document.getElementById('hchat-sub').textContent = `Select a hiring post`;
+    }
+    chat.forEach(m=>{
+        const row = document.createElement('div');
+        row.className = 'mb-2';
+        row.innerHTML = `<div class="text-xs text-gray-400">${escapeHtml(m.sender)} • ${new Date(m.ts).toLocaleTimeString()}</div><div>${escapeHtml(m.text)}</div>`;
+        box.appendChild(row);
+    });
+    box.scrollTop = box.scrollHeight;
 }
 function sendHiringChat(){
-  if (!currentUser) return alert('Login to chat.');
-  if (!currentHiringChat) return alert('No chat open.');
-  const txt = (document.getElementById('hchat-input').value || '').trim();
-  if (!txt) return;
-  hiringChats[currentHiringChat] = hiringChats[currentHiringChat] || [];
-  hiringChats[currentHiringChat].push({ sender: currentUser.name, text: txt, ts: Date.now() });
-  saveAll(); renderHiringChat(currentHiringChat); document.getElementById('hchat-input').value = '';
+    if (!currentUser) return alert('Login to chat.');
+    if (!currentHiringChat) return alert('No chat open.');
+    const txt = (document.getElementById('hchat-input').value || '').trim();
+    if (!txt) return;
+    hiringChats[currentHiringChat] = hiringChats[currentHiringChat] || [];
+    hiringChats[currentHiringChat].push({ sender: currentUser.name, text: txt, ts: Date.now() });
+    saveAll(); renderHiringChat(currentHiringChat); document.getElementById('hchat-input').value = '';
+    // also mirror to public messages as a short record (optional)
+    messages.push({ id: 'hmsg_' + Date.now(), user: currentUser.name, role: getUser(currentUser.name)?.role || 'member', text: `[Hiring:${currentHiringChat}] ${txt}`, ts: Date.now() });
+    saveAll(); renderMessages();
 }
 
-/* Create / remove hiring posts */
+/* Create, remove hiring posts */
 function createHiringPost(){
-  if (!currentUser) return alert('Login first.');
-  const u = getUser(currentUser.name);
-  if (!u) return alert('User record missing.');
-  if (!(u.role === 'server developer' || u.role === 'admin' || u.isDeveloper)) return alert('Only server developers or admins can create hiring posts.');
-  const now = Date.now();
-  if (!u.lastReset || now - u.lastReset > 30*24*3600*1000) { u.postsThisMonth = 0; u.lastReset = now; }
-  if ((u.postsThisMonth || 0) >= 3) return alert('You reached 3 hiring posts this month.');
-  const title = (document.getElementById('h-title').value || '').trim();
-  const price = (document.getElementById('h-price').value || '').trim();
-  const desc = (document.getElementById('h-desc').value || '').trim();
-  if (!title || !price || !desc) return alert('Fill title, price and description.');
-  const id = 'hp_' + Date.now() + '_' + Math.random().toString(36,6);
-  hiringPosts.push({ id, owner: currentUser.name, title, price, desc, ts: Date.now() });
-  u.postsThisMonth = (u.postsThisMonth || 0) + 1;
-  saveAll(); renderHiring(); closeAll();
-  alert('Hiring post created. Payments outside the website.');
+    if (!currentUser) return alert('Login first.');
+    const u = getUser(currentUser.name);
+    if (!u) return alert('User record missing.');
+    if (!(u.role === 'server developer' || u.role === 'admin' || u.isDeveloper)) return alert('Only server developers or admins can create hiring posts.');
+    const now = Date.now();
+    if (!u.lastReset || now - u.lastReset > 30*24*3600*1000) { u.postsThisMonth = 0; u.lastReset = now; }
+    if ((u.postsThisMonth || 0) >= 3) return alert('You reached 3 hiring posts this month.');
+    const title = (document.getElementById('h-title').value || '').trim();
+    const price = (document.getElementById('h-price').value || '').trim();
+    const desc = (document.getElementById('h-desc').value || '').trim();
+    if (!title || !price || !desc) return alert('Fill title, price and description.');
+    const id = 'hp_' + Date.now() + '_' + Math.random().toString(36,6);
+    hiringPosts.push({ id, owner: currentUser.name, title, price, desc, ts: Date.now() });
+    u.postsThisMonth = (u.postsThisMonth || 0) + 1;
+    saveAll(); renderHiring(); closeAll();
+    alert('Hiring post created. Payments outside the website.');
 }
 function removeHiring(id){
-  if (!currentUser) return alert('Not allowed.');
-  const idx = hiringPosts.findIndex(h=>h.id===id);
-  if (idx===-1) return;
-  const urec = getUser(currentUser.name);
-  if (urec && (urec.role === 'admin' || hiringPosts[idx].owner === currentUser.name)) {
-    hiringPosts.splice(idx,1); delete hiringChats[id]; saveAll(); renderHiring();
-  } else alert('Not permitted.');
+    if (!currentUser) return alert('Not allowed.');
+    const idx = hiringPosts.findIndex(h=>h.id===id);
+    if (idx===-1) return;
+    const urec = getUser(currentUser.name);
+    if (urec && (urec.role === 'admin' || hiringPosts[idx].owner === currentUser.name)) {
+        hiringPosts.splice(idx,1); delete hiringChats[id]; saveAll(); renderHiring();
+    } else alert('Not permitted.');
 }
 
-/* Applications (admin) */
+/* ==========================
+   Applications (admin review)
+   ========================== */
 function openApplyModal(){ openModal('apply-modal','apply-card'); }
 function submitApplication(){
-  if (!currentUser) return alert('Login first to apply.');
-  const discord = (document.getElementById('apply-discord').value || '').trim();
-  const txt = (document.getElementById('apply-msg').value || '').trim();
-  if (!discord || !txt) return alert('Please include your Discord handle and a short description.');
-  const id = 'app_' + Date.now() + '_' + Math.random().toString(36,6);
-  applications.push({ id, user: currentUser.name, discord, text: txt, ts: Date.now() });
-  saveAll(); closeAll(); alert('Application submitted. Admins will review and can assign the "server developer" role.');
+    if (!currentUser) return alert('Login first to apply.');
+    const discord = (document.getElementById('apply-discord').value || '').trim();
+    const txt = (document.getElementById('apply-msg').value || '').trim();
+    if (!discord || !txt) return alert('Please include your Discord handle and a short description.');
+    const id = 'app_' + Date.now() + '_' + Math.random().toString(36,6);
+    applications.push({ id, user: currentUser.name, discord, text: txt, ts: Date.now() });
+    saveAll(); closeAll(); alert('Application submitted. Admins will review and can assign the "server developer" role.');
 }
 function openApplicationsModal(){
-  if (!currentUser) return alert('Only admins can view applications.');
-  const u = getUser(currentUser.name);
-  if (!u || u.role !== 'admin') return alert('Only admins can view applications.');
-  const list = document.getElementById('applications-list');
-  list.innerHTML = '';
-  applications.forEach(a=>{
-    const el = document.createElement('div');
-    el.className = 'bg-gray-900/30 p-3 rounded-lg border border-white/5 flex justify-between items-start';
-    el.innerHTML = `
-      <div>
-        <div class="font-bold">${escapeHtml(a.user)}</div>
-        <div class="text-xs text-gray-400">Discord: ${escapeHtml(a.discord)}</div>
-        <div class="text-sm text-gray-200 mt-1">${escapeHtml(a.text)}</div>
-        <div class="text-xs text-gray-400 mt-1">${new Date(a.ts).toLocaleString()}</div>
-      </div>
-      <div class="flex flex-col gap-2">
-        <button class="pill text-sm" onclick="acceptApplication('${a.id}')">Accept</button>
-        <button class="pill text-sm text-red-400" onclick="rejectApplication('${a.id}')">Reject</button>
-      </div>
-    `;
-    list.appendChild(el);
-  });
-  openModal('applications-modal','applications-card');
+    if (!currentUser) return alert('Only admins can view applications.');
+    const u = getUser(currentUser.name);
+    if (!u || u.role !== 'admin') return alert('Only admins can view applications.');
+    const list = document.getElementById('applications-list');
+    list.innerHTML = '';
+    applications.forEach(a=>{
+        const el = document.createElement('div');
+        el.className = 'bg-gray-900/30 p-3 rounded-lg border border-white/5 flex justify-between items-start';
+        el.innerHTML = `
+            <div>
+                <div class="font-bold">${escapeHtml(a.user)}</div>
+                <div class="text-xs text-gray-400">Discord: ${escapeHtml(a.discord)}</div>
+                <div class="text-sm text-gray-200 mt-1">${escapeHtml(a.text)}</div>
+                <div class="text-xs text-gray-400 mt-1">${new Date(a.ts).toLocaleString()}</div>
+            </div>
+            <div class="flex flex-col gap-2">
+                <button class="pill text-sm" onclick="acceptApplication('${a.id}')">Accept</button>
+                <button class="pill text-sm text-red-400" onclick="rejectApplication('${a.id}')">Reject</button>
+            </div>
+        `;
+        list.appendChild(el);
+    });
+    openModal('applications-modal','applications-card');
 }
 function acceptApplication(appId){
-  const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
-  const a = applications[idx];
-  const u = getUser(a.user);
-  if (!u) return alert('Applicant user not found.');
-  if (u.role === 'admin') {
-    u.isDeveloper = true;
-  } else {
-    u.role = 'server developer';
-    u.isDeveloper = true;
-  }
-  applications.splice(idx,1); saveAll();
-  openApplicationsModal(); renderHiring();
-  alert(a.user + ' has been granted server developer access (role preserved if admin).');
+    const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
+    const a = applications[idx];
+    const u = getUser(a.user);
+    if (!u) return alert('Applicant user not found.');
+    // IMPORTANT: if the user is admin, keep admin role and set isDeveloper flag
+    if (u.role === 'admin') {
+        u.isDeveloper = true;
+    } else {
+        u.role = 'server developer';
+        u.isDeveloper = true;
+    }
+    // remove application
+    applications.splice(idx,1); saveAll();
+    openApplicationsModal(); renderHiring();
+    alert(a.user + ' has been granted server developer access (role preserved if admin).');
 }
 function rejectApplication(appId){
-  const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
-  const a = applications[idx];
-  applications.splice(idx,1); saveAll();
-  openApplicationsModal();
-  alert('Rejected application of ' + a.user);
+    const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
+    const a = applications[idx];
+    applications.splice(idx,1); saveAll();
+    openApplicationsModal();
+    alert('Rejected application of ' + a.user);
 }
 
-/* Admin helper */
+/* ==========================
+   Admin role assignment helper (fallback)
+   ========================== */
 function adminAssignRole(userName, role){
-  if (!currentUser) return alert('Only admins can assign roles.');
-  const ucur = getUser(currentUser.name);
-  if (!ucur || ucur.role !== 'admin') return alert('Only admins can assign roles.');
-  const u = getUser(userName);
-  if (!u) return alert('User not found');
-  if (role === 'server developer' && u.role === 'admin') {
-    u.isDeveloper = true;
-  } else {
-    u.role = role;
-    if (role === 'server developer') u.isDeveloper = true;
-  }
-  saveAll();
-  if (currentUser.name === userName) currentUser.role = u.role;
-  localStorage.setItem('currentUser', JSON.stringify(currentUser));
-  refreshUserBadge(); renderMessages(); renderHiring();
-  alert(`Assigned role ${role} to ${userName}`);
+    if (!currentUser) return alert('Only admins can assign roles.');
+    const ucur = getUser(currentUser.name);
+    if (!ucur || ucur.role !== 'admin') return alert('Only admins can assign roles.');
+    const u = getUser(userName);
+    if (!u) return alert('User not found');
+    // If assigning 'server developer' to an admin, keep admin and set flag
+    if (role === 'server developer' && u.role === 'admin') {
+        u.isDeveloper = true;
+    } else {
+        u.role = role;
+        if (role === 'server developer') u.isDeveloper = true;
+    }
+    saveAll();
+    if (currentUser.name === userName) currentUser.role = u.role;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    refreshUserBadge(); renderMessages(); renderHiring();
+    alert(`Assigned role ${role} to ${userName}`);
 }
 
-/* Modal helpers */
-const modalList = [
-  { id: 'versions-modal', cardId: 'versions-card' },
-  { id: 'detail-modal', cardId: 'detail-card' },
-  { id: 'settings-modal', cardId: 'settings-card' },
-  { id: 'login-modal', cardId: 'login-card' },
-  { id: 'apply-modal', cardId: 'apply-card' },
-  { id: 'applications-modal', cardId: 'applications-card' },
-  { id: 'create-hiring-modal', cardId: 'create-hiring-card' },
-  { id: 'hiring-chat-modal', cardId: 'hiring-chat-card' },
-  { id: 'dms-modal', cardId: 'dms-card' }
-];
-
-function openModal(modalId, cardId){
-  document.getElementById('main-canvas').classList.add('blurred');
-  const modal = document.getElementById(modalId);
-  const card = document.getElementById(cardId);
-  if (!modal) return;
-  modal.classList.remove('opacity-0','pointer-events-none');
-  if (card) { card.classList.remove('scale-90','translate-y-4'); card.classList.add('scale-100','translate-y-0'); }
-}
-function closeAll(){
-  document.getElementById('main-canvas').classList.remove('blurred');
-  modalList.forEach(m=>{
-    const modal = document.getElementById(m.id);
-    const card = document.getElementById(m.cardId);
-    if (modal) modal.classList.add('opacity-0','pointer-events-none');
-    if (card) { card.classList.add('scale-90','translate-y-4'); card.classList.remove('scale-100','translate-y-0'); }
-  });
-}
-function toggleSettings(){
-  const modal = document.getElementById('settings-modal');
-  if (!modal) return;
-  if (modal.classList.contains('opacity-0')) openModal('settings-modal','settings-card'); else closeAll();
-}
-
-/* Wiring + init */
+/* ==========================
+   Startup & event wiring
+   ========================== */
 document.getElementById('send-btn').addEventListener('click', sendMessage);
 document.getElementById('forum-input').addEventListener('keydown', (e)=> { if (e.key === 'Enter') sendMessage(); });
 document.getElementById('create-hiring-btn').addEventListener('click', ()=>{
-  if (!currentUser) return alert('Login to create a hiring post (server developer or admin).');
-  const rec = getUser(currentUser.name);
-  if (!(rec && (rec.role==='server developer' || rec.role==='admin' || rec.isDeveloper))) return alert('Only server developers or admins can create hiring posts.');
-  openModal('create-hiring-modal','create-hiring-card');
+    if (!currentUser) return alert('Login to create a hiring post (server developer or admin).');
+    const rec = getUser(currentUser.name);
+    if (!(rec && (rec.role==='server developer' || rec.role==='admin' || rec.isDeveloper))) return alert('Only server developers or admins can create hiring posts.');
+    openModal('create-hiring-modal','create-hiring-card');
 });
-document.getElementById('favicon-input').addEventListener('change', ()=> { /* handled by applyFaviconFromInput */ });
 
+// language change
 function changeLang(lang){ currentLang = lang; localStorage.setItem('lang', lang); updateHeaderAndLang(); populateCards(); populateChart(); }
 
-/* Expose some functions for inline handlers */
+// expose functions to window for inline handlers
 window.openLoginModal = openLoginModal;
 window.openApplyModal = openApplyModal;
 window.openVersionsModal = openVersionsModal;
@@ -906,36 +1071,24 @@ window.addFriendFromMsg = addFriendFromMsg;
 window.applyFaviconFromInput = applyFaviconFromInput;
 window.removeFavicon = removeFavicon;
 
-/* Seed sample data (only when blank) so page shows info */
-function seedIfEmpty(){
-  if (!users.length) {
-    users.push({ name: 'alice', pass: '123', role: 'member', friends: [], postsThisMonth:0, lastReset: Date.now() });
-    users.push({ name: 'bob', pass: '123', role: 'member', friends: [], postsThisMonth:0, lastReset: Date.now() });
-    saveAll();
-  }
-  if (!messages.length) {
-    messages.push({ id:'m_sys_1', user:'System', role:'system', text: 'Welcome to Forums Chat! Create an account to post, DM others and apply for Server Developer.', ts: Date.now() });
-    messages.push({ id:'m_1', user:'alice', role:'member', text: 'Hello — this is an example message.', ts: Date.now()-600000 });
-    saveAll();
-  }
-  if (!hiringPosts.length) {
-    hiringPosts.push({ id:'hp_example_1', owner:'alice', title:'Full server setup', price:'$50', desc:'I will set up a Paper server, plugins and config', ts: Date.now()-3600000 });
-    saveAll();
-  }
-}
-
-/* Final init */
+/* initial render */
 function init(){
-  loadFaviconFromStorage();
-  seedIfEmpty();
-  updateHeaderAndLang();
-  populateCards();
-  populateChart();
-  refreshUserBadge();
-  renderMessages();
-  renderHiring();
-  lucide.createIcons();
-  document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeAll(); });
+    updateHeaderAndLang();
+    populateCards();
+    populateChart();
+    refreshUserBadge();
+    renderMessages();
+    renderHiring();
+    loadFaviconFromStorage();
+    lucide.createIcons();
+    // seed a neutral system message if empty
+    if (messages.length === 0) {
+        messages.push({ id:'m_sys_1', user:'System', role:'system', text: 'Welcome to Forums Chat! Create an account to post, DM others and apply for Server Developer.', ts: Date.now() });
+        saveAll();
+        renderMessages();
+    }
+    // keyboard close
+    document.addEventListener('keydown', (e)=> { if (e.key === 'Escape') closeAll(); });
 }
 init();
 
