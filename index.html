@@ -29,6 +29,9 @@
         .pill { padding:6px 10px; border-radius:999px; background: rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.04) }
         .chat-box { max-height: 320px; overflow-y: auto; }
         .clickable { cursor: pointer; }
+        .selected { background: rgba(99,102,241,0.12); }
+        /* hide element helper */
+        .hidden-el { display: none !important; }
     </style>
 </head>
 <body class="bg-gray-900 text-white h-screen overflow-hidden animated-bg selection:bg-indigo-500 selection:text-white">
@@ -60,7 +63,7 @@
                 <span id="guest-emoji" class="text-2xl">👤</span>
             </button>
 
-            <button onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
+            <button id="settings-btn" onclick="toggleSettings()" class="group relative p-3 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 transition-all duration-300 hover:rotate-90 shadow-lg backdrop-blur-md">
                 <i data-lucide="settings" class="w-6 h-6 text-gray-300 group-hover:text-white"></i>
             </button>
         </div>
@@ -87,7 +90,7 @@
                     <div class="flex items-center gap-3">
                         <div id="current-user-badge" class="pill small">Guest</div>
                         <div id="current-user-role" class="role-badge text-xs text-gray-200 hidden"></div>
-                        <button class="pill text-sm" onclick="openApplyModal()">Apply for Server Developer</button>
+                        <button id="apply-button-header" class="pill text-sm" onclick="openApplyModal()">Apply for Server Developer</button>
                     </div>
                 </div>
 
@@ -99,11 +102,11 @@
                             <input id="forum-input" placeholder="Write a message..." class="flex-grow px-4 py-2 rounded-xl bg-gray-800/40 border border-white/5 focus:outline-none" />
                             <button id="send-btn" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500">Send</button>
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">Choose a name and a small password in the login/register modal to post messages.</p>
+                        <p id="forum-note" class="text-xs text-gray-400 mt-1">Choose a name and a small password in the login/register modal to post messages.</p>
                     </div>
 
-                    <div class="flex flex-col gap-3">
-                        <div class="bg-gray-800/50 rounded-xl p-3 border border-white/5">
+                    <div id="side-panel" class="flex flex-col gap-3">
+                        <div id="quick-login-card" class="bg-gray-800/50 rounded-xl p-3 border border-white/5">
                             <h4 class="font-bold">Quick Login</h4>
                             <p class="text-sm text-gray-400">Use the top-right icon to login/register.</p>
                             <div class="flex gap-2 mt-2">
@@ -216,8 +219,8 @@
                     <input id="old-pass" type="password" placeholder="Current password" class="w-full px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
                     <input id="new-pass" type="password" placeholder="New password" class="w-full px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
                     <div class="flex gap-2">
-                        <button class="w-full py-2 rounded-xl bg-indigo-600" onclick="changePassword()">Change Password</button>
-                        <button class="w-full py-2 rounded-xl bg-red-600" onclick="logout()">Logout</button>
+                        <button id="change-pass-btn" class="w-full py-2 rounded-xl bg-indigo-600" onclick="changePassword()">Change Password</button>
+                        <button id="logout-btn" class="w-full py-2 rounded-xl bg-red-600" onclick="logout()">Logout</button>
                     </div>
                 </div>
             </div>
@@ -296,29 +299,38 @@
     </div>
 </div>
 
-<!-- Hiring Chat Modal -->
+<!-- Hiring Chat Modal (Discord-like: left list of posts, right chat) -->
 <div id="hiring-chat-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
-    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-2xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="hiring-chat-card">
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="hiring-chat-card">
         <div class="flex justify-between items-center mb-2">
             <div>
-                <h3 id="hchat-title" class="text-lg font-bold">Hiring Chat</h3>
-                <div id="hchat-sub" class="text-xs text-gray-400">Chat for hiring post</div>
+                <h3 id="hchat-title" class="text-lg font-bold">Hiring Chats</h3>
+                <div id="hchat-sub" class="text-xs text-gray-400">Select a hiring post to chat</div>
             </div>
             <button onclick="closeAll()" class="p-2 rounded-full bg-white/5 hover:bg-white/20"><i data-lucide="x" class="w-5 h-5"></i></button>
         </div>
-        <div id="hchat-messages" class="chat-box mb-2 p-2 rounded-lg bg-gray-900/20 custom-scrollbar"></div>
-        <div class="flex gap-2">
-            <input id="hchat-input" placeholder="Message..." class="flex-grow px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
-            <button class="px-4 py-2 rounded-xl bg-indigo-600" onclick="sendHiringChat()">Send</button>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="md:col-span-1 bg-gray-900/10 rounded-lg p-2 max-h-[48vh] overflow-y-auto custom-scrollbar">
+                <div id="hchat-posts-list" class="space-y-2"></div>
+            </div>
+
+            <div class="md:col-span-3 flex flex-col">
+                <div id="hchat-messages" class="chat-box mb-2 p-2 rounded-lg bg-gray-900/20 custom-scrollbar flex-1"></div>
+                <div class="flex gap-2">
+                    <input id="hchat-input" placeholder="Message..." class="flex-grow px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
+                    <button class="px-4 py-2 rounded-xl bg-indigo-600" onclick="sendHiringChat()">Send</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- DMs Modal -->
+<!-- DMs Modal (Discord-like: left list of conversations, right messages) -->
 <div id="dms-modal" class="fixed inset-0 z-50 flex items-center justify-center opacity-0 pointer-events-none smooth-transition">
     <div onclick="closeAll()" class="absolute inset-0 bg-black/40"></div>
-    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-3xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="dms-card">
+    <div class="bg-gray-800/95 backdrop-blur-xl border border-white/10 rounded-2xl p-4 max-w-4xl w-full mx-4 shadow-2xl transform scale-90 translate-y-4 smooth-transition" id="dms-card">
         <div class="flex justify-between items-center mb-2">
             <h3 class="text-lg font-bold">Direct Messages</h3>
             <div class="flex items-center gap-2">
@@ -328,11 +340,11 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div class="md:col-span-1">
-                <div class="bg-gray-900/20 rounded-lg p-2 max-h-[48vh] overflow-y-auto custom-scrollbar" id="dm-conversations"></div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="md:col-span-1 bg-gray-900/10 rounded-lg p-2 max-h-[56vh] overflow-y-auto custom-scrollbar">
+                <div id="dm-conversations" class="space-y-2"></div>
             </div>
-            <div class="md:col-span-2 flex flex-col">
+            <div class="md:col-span-3 flex flex-col">
                 <div id="dm-window" class="flex-1 bg-gray-900/20 rounded-lg p-3 mb-2 chat-box custom-scrollbar"></div>
                 <div class="flex gap-2">
                     <input id="dm-input" placeholder="Write DM..." class="flex-grow px-3 py-2 rounded-xl bg-gray-800/40 border border-white/5" />
@@ -387,23 +399,45 @@ function saveAll(){
 }
 
 function getUser(name){ return users.find(u => u.name === name); }
+function formatRoleDisplay(u){
+    if (!u) return 'Member';
+    const parts = [];
+    if (u.role === 'admin') parts.push('admin');
+    if (u.role === 'server developer') parts.push('server developer');
+    if (u.role === 'member') parts.push('member');
+    // legacy: allow isDeveloper flag
+    if (u.isDeveloper && !parts.includes('server developer')) parts.push('server developer');
+    // ensure uniqueness and order: admin first
+    const unique = [...new Set(parts)];
+    return unique.join(', ');
+}
+
 function refreshUserBadge(){
     const badge = document.getElementById('current-user-badge');
     const roleEl = document.getElementById('current-user-role');
     const appsBtn = document.getElementById('apps-btn');
+    const quickLoginCard = document.getElementById('quick-login-card');
+    const applyHeader = document.getElementById('apply-button-header');
     if (currentUser) {
+        const u = getUser(currentUser.name);
         badge.textContent = currentUser.name;
-        roleEl.textContent = currentUser.role || 'Member';
+        roleEl.textContent = formatRoleDisplay(u);
         roleEl.classList.remove('hidden');
         // show applications button only for admins
-        if (currentUser.role === 'admin') appsBtn.classList.remove('hidden'); else appsBtn.classList.add('hidden');
+        if (u && u.role === 'admin') appsBtn.classList.remove('hidden'); else appsBtn.classList.add('hidden');
         // show account section in settings
         document.getElementById('account-section').classList.remove('hidden');
+        // hide quick login panel
+        quickLoginCard.classList.add('hidden-el');
+        // update apply visibility: everyone can apply, keep button visible
+        applyHeader.classList.remove('hidden-el');
     } else {
         badge.textContent = 'Guest';
         roleEl.classList.add('hidden');
         appsBtn.classList.add('hidden');
         document.getElementById('account-section').classList.add('hidden');
+        quickLoginCard.classList.remove('hidden-el');
+        applyHeader.classList.remove('hidden-el');
     }
 }
 
@@ -473,7 +507,7 @@ function populateChart(){
 }
 
 /* ==========================
-   Modals (open/close)
+   Modals (open/close) & Settings toggle
    ========================== */
 const modalList = [
     { id: 'versions-modal', cardId: 'versions-card' },
@@ -503,6 +537,16 @@ function closeAll(){
         if (modal) modal.classList.add('opacity-0','pointer-events-none');
         if (card) { card.classList.add('scale-90','translate-y-4'); card.classList.remove('scale-100','translate-y-0'); }
     });
+}
+
+function toggleSettings(){
+    const modal = document.getElementById('settings-modal');
+    if (!modal) return;
+    if (modal.classList.contains('opacity-0')) {
+        openModal('settings-modal','settings-card');
+    } else {
+        closeAll();
+    }
 }
 
 /* ==========================
@@ -550,7 +594,7 @@ function registerUser(){
     const pass = (document.getElementById('login-pass').value || '').trim();
     if (!name || !pass) return alert('Provide name and tiny password.');
     if (getUser(name)) return alert('User exists - please login or choose another name.');
-    const usr = { name, pass, role: 'member', postsThisMonth: 0, lastReset: Date.now(), friends: [] };
+    const usr = { name, pass, role: 'member', postsThisMonth: 0, lastReset: Date.now(), friends: [], isDeveloper: false };
     users.push(usr); saveAll();
     currentUser = { name: usr.name, role: usr.role };
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
@@ -608,10 +652,10 @@ function renderMessages(){
                 <div class="flex items-center justify-between gap-2">
                     <div>
                         <strong class="clickable" onclick="openDMFromUser('${m.user}')">${escapeHtml(m.user)}</strong>
-                        <span class="text-xs text-gray-400 ml-2">${m.role || 'Member'}</span>
+                        <span class="text-xs text-gray-400 ml-2">${escapeHtml(m.role || 'Member')}</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        ${currentUser && (currentUser.role === 'admin' || currentUser.name === m.user) ? `<button class="text-xs text-red-400" onclick="removeMessage('${m.id}')">Remove</button>` : ''}
+                        ${currentUser && (getUser(currentUser.name).role === 'admin' || m.user === currentUser.name) ? `<button class="text-xs text-red-400" onclick="removeMessage('${m.id}')">Remove</button>` : ''}
                         ${currentUser && currentUser.name !== m.user ? `<button class="text-xs text-indigo-300" onclick="addFriendFromMsg('${m.user}')">Add Friend</button>` : ''}
                     </div>
                 </div>
@@ -635,13 +679,14 @@ function sendMessage(){
 function removeMessage(id){
     if (!currentUser) return alert('Not allowed.');
     const idx = messages.findIndex(m=>m.id===id); if (idx===-1) return;
-    if (currentUser.role === 'admin' || messages[idx].user === currentUser.name) {
+    const urec = getUser(currentUser.name);
+    if (urec && (urec.role === 'admin' || messages[idx].user === currentUser.name)) {
         messages.splice(idx,1); saveAll(); renderMessages();
     } else alert('Not permitted.');
 }
 
 /* ==========================
-   Friend & DM helpers
+   Friend & DM helpers (Discord-like)
    ========================== */
 function addFriendFromMsg(username){
     if (!currentUser) return alert('Login to add friends.');
@@ -655,8 +700,8 @@ function addFriendFromMsg(username){
 function openDMModal(){ openModal('dms-modal','dms-card'); renderDMConversations(); }
 function openDMFromUser(username){
     if (!currentUser) return alert('Login to DM.');
-    openDMModal();
-    setTimeout(()=> startDMWith(username), 80);
+    // auto-create or open conversation, like Discord: select on left and show right
+    startDMWith(username);
 }
 function startDM(){
     const name = (document.getElementById('new-dm-user').value || '').trim();
@@ -679,15 +724,21 @@ function startDMWith(name){
 function renderDMConversations(selectedId){
     const container = document.getElementById('dm-conversations');
     container.innerHTML = '';
-    // list user's conversations
-    const myConvos = dms.filter(c => c.participants.includes(currentUser ? currentUser.name : ''));
+    // list user's conversations (sorted by last message)
+    const myConvos = dms.filter(c => c.participants.includes(currentUser ? currentUser.name : ''))
+                        .sort((a,b)=> {
+                            const la = a.messages.length ? a.messages[a.messages.length-1].ts : 0;
+                            const lb = b.messages.length ? b.messages[b.messages.length-1].ts : 0;
+                            return lb - la;
+                        });
     myConvos.forEach(c=>{
         const other = c.participants.find(p => p !== currentUser.name);
         const last = c.messages.length ? c.messages[c.messages.length-1].text.slice(0,40) : 'No messages';
         const el = document.createElement('div');
         el.className = 'p-2 rounded-lg clickable hover:bg-white/5';
+        if (c.id === selectedId) el.classList.add('selected');
         el.innerHTML = `<div class="font-bold">${escapeHtml(other)}</div><div class="text-xs text-gray-400">${escapeHtml(last)}</div>`;
-        el.onclick = ()=> { renderDMWindow(c.id); };
+        el.onclick = ()=> { renderDMWindow(c.id); renderDMConversations(c.id); };
         container.appendChild(el);
     });
     // friends fallback
@@ -733,7 +784,7 @@ function sendDM(){
 }
 
 /* ==========================
-   Hiring posts & per-post chats
+   Hiring posts & per-post chats (Discord-like)
    ========================== */
 function renderHiring(){
     const list = document.getElementById('hiring-list');
@@ -749,28 +800,47 @@ function renderHiring(){
                     <div class="text-xs text-gray-300 mt-1">By: <strong>${escapeHtml(p.owner)}</strong> — <span class="text-emerald-400">${escapeHtml(p.price)}</span></div>
                 </div>
                 <div class="flex flex-col gap-2">
-                    <button class="pill text-sm" onclick="openHiringChat('${p.id}')">Chat</button>
-                    ${currentUser && (currentUser.role === 'admin' || currentUser.name === p.owner) ? `<button class="pill text-sm text-red-400" onclick="removeHiring('${p.id}')">Remove</button>` : ''}
+                    <button class="pill text-sm" onclick="openHiringChat('${p.id}')">Open Chat</button>
+                    ${currentUser && (getUser(currentUser.name).role === 'admin' || currentUser.name === p.owner) ? `<button class="pill text-sm text-red-400" onclick="removeHiring('${p.id}')">Remove</button>` : ''}
                 </div>
             </div>
         `;
         list.appendChild(el);
     });
 }
+let currentHiringChat = null;
 function openHiringChat(postId){
     const post = hiringPosts.find(p=>p.id===postId);
     if (!post) return alert('Post not found');
     openModal('hiring-chat-modal','hiring-chat-card');
-    document.getElementById('hchat-title').textContent = `Chat: ${post.title}`;
-    document.getElementById('hchat-sub').textContent = `Owner: ${post.owner} — Price: ${post.price}`;
     currentHiringChat = postId;
+    renderHiringPostsList(postId);
     renderHiringChat(postId);
 }
-let currentHiringChat = null;
+function renderHiringPostsList(selectedId){
+    const container = document.getElementById('hchat-posts-list');
+    container.innerHTML = '';
+    hiringPosts.forEach(p=>{
+        const el = document.createElement('div');
+        el.className = 'p-2 rounded-lg clickable hover:bg-white/5';
+        if (p.id === selectedId) el.classList.add('selected');
+        el.innerHTML = `<div class="font-bold">${escapeHtml(p.title)}</div><div class="text-xs text-gray-400">By ${escapeHtml(p.owner)}</div>`;
+        el.onclick = ()=> { currentHiringChat = p.id; renderHiringPostsList(p.id); renderHiringChat(p.id); };
+        container.appendChild(el);
+    });
+}
 function renderHiringChat(postId){
     const box = document.getElementById('hchat-messages');
     box.innerHTML = '';
     const chat = hiringChats[postId] || [];
+    const post = hiringPosts.find(p=>p.id===postId);
+    if (post) {
+        document.getElementById('hchat-title').textContent = `Chat: ${post.title}`;
+        document.getElementById('hchat-sub').textContent = `Owner: ${post.owner} — Price: ${post.price}`;
+    } else {
+        document.getElementById('hchat-title').textContent = `Chat`;
+        document.getElementById('hchat-sub').textContent = `Select a hiring post`;
+    }
     chat.forEach(m=>{
         const row = document.createElement('div');
         row.className = 'mb-2';
@@ -787,7 +857,7 @@ function sendHiringChat(){
     hiringChats[currentHiringChat] = hiringChats[currentHiringChat] || [];
     hiringChats[currentHiringChat].push({ sender: currentUser.name, text: txt, ts: Date.now() });
     saveAll(); renderHiringChat(currentHiringChat); document.getElementById('hchat-input').value = '';
-    // also mirror to public messages as a record (optional)
+    // also mirror to public messages as a short record (optional)
     messages.push({ id: 'hmsg_' + Date.now(), user: currentUser.name, role: getUser(currentUser.name)?.role || 'member', text: `[Hiring:${currentHiringChat}] ${txt}`, ts: Date.now() });
     saveAll(); renderMessages();
 }
@@ -797,7 +867,7 @@ function createHiringPost(){
     if (!currentUser) return alert('Login first.');
     const u = getUser(currentUser.name);
     if (!u) return alert('User record missing.');
-    if (!(u.role === 'server developer' || u.role === 'admin')) return alert('Only server developers or admins can create hiring posts.');
+    if (!(u.role === 'server developer' || u.role === 'admin' || u.isDeveloper)) return alert('Only server developers or admins can create hiring posts.');
     const now = Date.now();
     if (!u.lastReset || now - u.lastReset > 30*24*3600*1000) { u.postsThisMonth = 0; u.lastReset = now; }
     if ((u.postsThisMonth || 0) >= 3) return alert('You reached 3 hiring posts this month.');
@@ -815,8 +885,9 @@ function removeHiring(id){
     if (!currentUser) return alert('Not allowed.');
     const idx = hiringPosts.findIndex(h=>h.id===id);
     if (idx===-1) return;
-    if (currentUser.role === 'admin' || hiringPosts[idx].owner === currentUser.name) {
-        hiringPosts.splice(idx,1); saveAll(); renderHiring();
+    const urec = getUser(currentUser.name);
+    if (urec && (urec.role === 'admin' || hiringPosts[idx].owner === currentUser.name)) {
+        hiringPosts.splice(idx,1); delete hiringChats[id]; saveAll(); renderHiring();
     } else alert('Not permitted.');
 }
 
@@ -834,7 +905,9 @@ function submitApplication(){
     saveAll(); closeAll(); alert('Application submitted. Admins will review and can assign the "server developer" role.');
 }
 function openApplicationsModal(){
-    if (!currentUser || currentUser.role !== 'admin') return alert('Only admins can view applications.');
+    if (!currentUser) return alert('Only admins can view applications.');
+    const u = getUser(currentUser.name);
+    if (!u || u.role !== 'admin') return alert('Only admins can view applications.');
     const list = document.getElementById('applications-list');
     list.innerHTML = '';
     applications.forEach(a=>{
@@ -859,15 +932,19 @@ function openApplicationsModal(){
 function acceptApplication(appId){
     const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
     const a = applications[idx];
-    // assign role
     const u = getUser(a.user);
     if (!u) return alert('Applicant user not found.');
-    u.role = 'server developer';
-    saveAll();
+    // IMPORTANT: if the user is admin, keep admin role and set isDeveloper flag
+    if (u.role === 'admin') {
+        u.isDeveloper = true;
+    } else {
+        u.role = 'server developer';
+        u.isDeveloper = true;
+    }
     // remove application
     applications.splice(idx,1); saveAll();
     openApplicationsModal(); renderHiring();
-    alert(a.user + ' has been granted the "server developer" role.');
+    alert(a.user + ' has been granted server developer access (role preserved if admin).');
 }
 function rejectApplication(appId){
     const idx = applications.findIndex(a=>a.id===appId); if (idx===-1) return alert('Application not found.');
@@ -881,12 +958,20 @@ function rejectApplication(appId){
    Admin role assignment helper (fallback)
    ========================== */
 function adminAssignRole(userName, role){
-    if (!currentUser || currentUser.role !== 'admin') return alert('Only admins can assign roles.');
+    if (!currentUser) return alert('Only admins can assign roles.');
+    const ucur = getUser(currentUser.name);
+    if (!ucur || ucur.role !== 'admin') return alert('Only admins can assign roles.');
     const u = getUser(userName);
     if (!u) return alert('User not found');
-    u.role = role;
+    // If assigning 'server developer' to an admin, keep admin and set flag
+    if (role === 'server developer' && u.role === 'admin') {
+        u.isDeveloper = true;
+    } else {
+        u.role = role;
+        if (role === 'server developer') u.isDeveloper = true;
+    }
     saveAll();
-    if (currentUser.name === userName) currentUser.role = role;
+    if (currentUser.name === userName) currentUser.role = u.role;
     localStorage.setItem('currentUser', JSON.stringify(currentUser));
     refreshUserBadge(); renderMessages(); renderHiring();
     alert(`Assigned role ${role} to ${userName}`);
@@ -900,7 +985,7 @@ document.getElementById('forum-input').addEventListener('keydown', (e)=> { if (e
 document.getElementById('create-hiring-btn').addEventListener('click', ()=>{
     if (!currentUser) return alert('Login to create a hiring post (server developer or admin).');
     const rec = getUser(currentUser.name);
-    if (!(rec && (rec.role==='server developer' || rec.role==='admin'))) return alert('Only server developers or admins can create hiring posts.');
+    if (!(rec && (rec.role==='server developer' || rec.role==='admin' || rec.isDeveloper))) return alert('Only server developers or admins can create hiring posts.');
     openModal('create-hiring-modal','create-hiring-card');
 });
 
@@ -918,7 +1003,7 @@ window.adminAssignRole = adminAssignRole;
 window.openDMFromUser = openDMFromUser;
 window.addFriendFromMsg = addFriendFromMsg;
 
-// initial render
+/* initial render */
 function init(){
     updateHeaderAndLang();
     populateCards();
